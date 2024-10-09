@@ -1,6 +1,5 @@
 from IPython import embed
 from carmain.backend.db import Base
-from sqlalchemy import select, update, insert, delete
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
