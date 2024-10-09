@@ -1,17 +1,33 @@
+from typing import Generator
+
 from IPython import embed
-from carmain.backend.db import Base
+from fastapi import Depends
+from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+
+from carmain.core.db import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update, insert, delete  # noqa
-from carmain.config.config import get_settings
+from carmain.core.config import get_settings
+from carmain.models.users import User
 
 settings = get_settings()
 # print(settings)
-engine = create_engine(f'sqlite:///{settings.db_name}.db', echo=True)
+engine = create_engine(f"sqlite:///{settings.db_name}.db", echo=True)
 Session = sessionmaker(engine)
 
+
+def get_session() -> Generator:
+    with Session() as session:
+        yield session
+
+
+def get_user_db(session=Depends(get_session)):
+    yield SQLAlchemyUserDatabase(session, User)
+
+
 banner = "Additional imports:\n"
-#from carmain.main import app
+
 
 for clazz in Base.registry._class_registry.values():
     if hasattr(clazz, "__tablename__"):
