@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from carmain.backend.db import Base
-from carmain.models.users import User
+from carmain.models.users import User  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
