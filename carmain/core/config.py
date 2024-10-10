@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     secret_key: str
     db_name: str
 
-    model_config = SettingsConfigDict(env_file='.env')
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 @lru_cache

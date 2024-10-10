@@ -23,8 +23,14 @@ async_session_maker = async_sessionmaker(
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
+    session: AsyncSession = async_session_maker()
+    try:
         yield session
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
 
 
 class Base(DeclarativeBase):
@@ -33,6 +39,33 @@ class Base(DeclarativeBase):
 
 class AccessToken(SQLAlchemyBaseAccessTokenTable, Base):
     pass
+
+
+# class SessionManager:
+#     def __init__(self) -> None:
+#         self.session_factory = async_scoped_session(
+#             async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+#         )
+#         self.session = None
+#
+#     async def __aenter__(self) -> None:
+#         self.session = self.session_factory()
+#
+#     async def __aexit__(self, *args: object) -> None:
+#         await self.rollback()
+#
+#     async def commit(self) -> None:
+#         if self.session:
+#             await self.session.commit()
+#             await self.session.close()
+#         self.session = None
+#
+#     async def rollback(self) -> None:
+#         if self.session:
+#             await self.session.rollback()
+#             await self.session.close()
+#         self.session = None
+#
 
 
 class Database:

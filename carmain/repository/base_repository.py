@@ -1,72 +1,72 @@
-from contextlib import AbstractContextManager
-from typing import Callable
-
+from typing import Annotated
+from fastapi import Depends
+from sqlalchemy import select, update, insert, delete
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
-
-# from app.core.config import configs
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+from carmain.core.db import get_async_session
 from carmain.core.exceptions import DuplicatedError, NotFoundError
-
-# from app.util.query_builder import dict_to_sqlalchemy_filter_options
 
 
 class BaseRepository:
     def __init__(
-        self, session_factory: Callable[..., AbstractContextManager[Session]], model
+        self, model, session: Annotated[AsyncSession, Depends(get_async_session)]
     ) -> None:
-        self.session_factory = session_factory
+        self.session = session
         self.model = model
 
-    def read_by_id(self, obj_id: int, eager=False):
-        with self.session_factory() as session:
-            query = session.query(self.model)
-            if eager:
-                for eager in getattr(self.model, "eagers", []):
-                    query = query.options(joinedload(getattr(self.model, eager)))
-            query = query.filter(self.model.id == obj_id).first()
-            if not query:
-                raise NotFoundError(detail=f"not found id : {obj_id}")
-            return query
+    async def read_by_id(
+        self,
+        obj_id: int,
+        eager=False,
+    ):
+        query = select(self.model)
+        # query = await self.session.query(self.model)
+        if eager:
+            for eager in getattr(self.model, "eagers", []):
+                query = query.options(joinedload(getattr(self.model, eager)))
+        query = query.where(self.model.id == obj_id).first()
+        if not query:
+            raise NotFoundError(detail=f"not found id : {obj_id}")
+        return self.session.execute(query)
 
-    def create(self, schema):
-        with self.session_factory() as session:
-            query = self.model(**schema.dict())
-            try:
-                session.add(query)
-                session.commit()
-                session.refresh(query)
-            except IntegrityError as e:
-                raise DuplicatedError(detail=str(e.orig))
-            return query
+    async def create(self, schema):
+        query = self.model(**schema.dict())
+        try:
+            await self.session.execute(insert(self.model).values(**schema.dict()))
+            await self.session.commit()
+            # await session.refresh(query)
+        except IntegrityError as e:
+            raise DuplicatedError(detail=str(e.orig))
+        return query
 
-    def update(self, obj_id: int, schema):
-        with self.session_factory() as session:
-            session.query(self.model).filter(self.model.id == obj_id).update(
-                schema.dict(exclude_none=True)
-            )
-            session.commit()
-            return self.read_by_id(obj_id)
+    async def update(self, obj_id: int, schema):
+        await self.session.execute(
+            update(schema.dict(exclude_none=True)).where(self.model.id == obj_id)
+        )
+        await self.session.commit()
+        return self.read_by_id(obj_id)
 
-    def update_attr(self, obj_id: int, column: str, value):
-        with self.session_factory() as session:
-            session.query(self.model).filter(self.model.id == obj_id).update(
-                {column: value}
-            )
-            session.commit()
-            return self.read_by_id(obj_id)
+    async def delete_by_id(self, obj_id: int):
+        obj = await self.session.execute(
+            delete(self.model).where(self.model.id == obj_id)
+        )
+        await self.session.commit()
+        return obj
 
-    def whole_update(self, obj_id: int, schema):
-        with self.session_factory() as session:
-            session.query(self.model).filter(self.model.id == obj_id).update(
-                schema.dict()
-            )
-            session.commit()
-            return self.read_by_id(obj_id)
-
-    def delete_by_id(self, obj_id: int):
-        with self.session_factory() as session:
-            query = session.query(self.model).filter(self.model.id == obj_id).first()
-            if not query:
-                raise NotFoundError(detail=f"not found id : {obj_id}")
-            session.delete(query)
-            session.commit()
+    # def update_attr(self, obj_id: int, column: str, value):
+    #     with self.session_factory() as session:
+    #         session.query(self.model).filter(self.model.id == obj_id).update(
+    #             {column: value}
+    #         )
+    #         session.commit()
+    #         return self.read_by_id(obj_id)
+    #
+    # def whole_update(self, obj_id: int, schema):
+    #     with self.session_factory() as session:
+    #         session.query(self.model).filter(self.model.id == obj_id).update(
+    #             schema.dict()
+    #         )
+    #         session.commit()
+    #         return self.read_by_id(obj_id)
+    #

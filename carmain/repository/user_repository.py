@@ -1,13 +1,15 @@
-from contextlib import AbstractContextManager
-from typing import Callable
+from typing import Annotated
 
-from sqlalchemy.orm import Session
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from carmain.core.db import get_async_session
 from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository):
-    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
-        self.session_factory = session_factory
-        super().__init__(session_factory, User)
+    def __init__(
+        self, session: Annotated[AsyncSession, Depends(get_async_session)]
+    ) -> None:
+        super().__init__(User, session)
