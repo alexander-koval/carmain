@@ -10,6 +10,7 @@ from carmain.repository.base_repository import BaseRepository
 
 class UserRepository(BaseRepository):
     def __init__(
-        self, session: Annotated[AsyncSession, Depends(get_async_session)]
+        self,
+        session: Annotated[AsyncSession, Depends(get_async_session)],
     ) -> None:
         super().__init__(User, session)

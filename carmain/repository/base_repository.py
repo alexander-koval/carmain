@@ -4,7 +4,7 @@ from sqlalchemy import select, update, insert, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from carmain.core.db import get_async_session
+from carmain.core.db import get_async_session, Base
 from carmain.core.exceptions import DuplicatedError, NotFoundError
 
 
@@ -30,22 +30,21 @@ class BaseRepository:
             raise NotFoundError(detail=f"not found id : {obj_id}")
         return self.session.execute(query)
 
-    async def create(self, schema):
-        query = self.model(**schema.dict())
+    async def create(self, obj: Base):
         try:
-            await self.session.execute(insert(self.model).values(**schema.dict()))
+            self.session.add(obj)
             await self.session.commit()
             # await session.refresh(query)
         except IntegrityError as e:
             raise DuplicatedError(detail=str(e.orig))
-        return query
+        return obj
 
-    async def update(self, obj_id: int, schema):
-        await self.session.execute(
-            update(schema.dict(exclude_none=True)).where(self.model.id == obj_id)
-        )
-        await self.session.commit()
-        return self.read_by_id(obj_id)
+    # async def update(self, obj_id: int, schema):
+    #     await self.session.execute(
+    #         update(schema.dict(exclude_none=True)).where(self.model.id == obj_id)
+    #     )
+    #     await self.session.commit()
+    #     return self.read_by_id(obj_id)
 
     async def delete_by_id(self, obj_id: int):
         obj = await self.session.execute(

@@ -7,6 +7,9 @@ from alembic import context
 
 from carmain.core.db import Base
 from carmain.models.users import User  # noqa
+from carmain.core.db import AccessToken  # noqa
+import fastapi_users_db_sqlalchemy  # noqa
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -46,6 +49,7 @@ def run_migrations_offline() -> None:
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
+        render_as_batch=True,
         dialect_opts={"paramstyle": "named"},
     )
 

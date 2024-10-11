@@ -1,6 +1,5 @@
 from typing import AsyncGenerator
 
-from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -8,10 +7,6 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 from sqlalchemy.orm import DeclarativeBase
-from fastapi_users_db_sqlalchemy.access_token import (
-    SQLAlchemyBaseAccessTokenTable,
-    SQLAlchemyAccessTokenDatabase,
-)
 
 from carmain.core.config import get_settings
 
@@ -34,10 +29,6 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 class Base(DeclarativeBase):
-    pass
-
-
-class AccessToken(SQLAlchemyBaseAccessTokenTable, Base):
     pass
 
 
@@ -86,7 +77,3 @@ class Database:
             raise
         finally:
             await session.close()
-
-
-async def get_access_token_db(session: AsyncSession = Depends(get_async_session)):
-    yield SQLAlchemyAccessTokenDatabase(session, AccessToken)

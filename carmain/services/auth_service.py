@@ -5,13 +5,17 @@ from fastapi import Depends
 from fastapi_users import BaseUserManager, IntegerIDMixin, models
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend
 from fastapi_users.authentication.strategy import DatabaseStrategy, AccessTokenDatabase
+from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 from starlette.requests import Request
 
 from carmain.core import db
-from carmain.core.db import AccessToken, get_access_token_db
+from carmain.models.auth import AccessToken, get_access_token_db, get_async_session
 from carmain.models.users import User, get_user_db
 from carmain.repository.user_repository import UserRepository
+from carmain.schema.auth import SignUp  # , SignInResponse
 from carmain.services.base_service import BaseService
 
 
@@ -35,13 +39,14 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         return await super().on_after_request_verify(user, token, request)
 
 
+password_helper = PasswordHelper()
+cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=3600)
+
+
 async def get_user_manager(
     user_db: Annotated[SQLAlchemyUserDatabase, Depends(get_user_db)]
 ):
-    yield UserManager(user_db)
-
-
-cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=3600)
+    yield UserManager(user_db, password_helper)
 
 
 def get_database_strategy(
@@ -57,17 +62,39 @@ def get_database_strategy(
 
 
 class AuthService(BaseService):
-    def __init__(self, user_repository: UserRepository):
+    def __init__(
+        self,
+        user_repository: Annotated[UserRepository, Depends(UserRepository)],
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
+        session: Annotated[AsyncSession, Depends(get_async_session)],
+    ):
         self.user_repository = user_repository
+        self.user_manager = user_manager
         self.auth_backend = AuthenticationBackend(
             name="db_session",
             transport=cookie_transport,
             get_strategy=get_database_strategy,
         )
+        self.session = session
         super().__init__(user_repository)
 
-    def sing_in(self, user_info):
+    async def sing_in(self, user_info):
         pass
 
-    def sing_up(self, user_info):
-        pass
+    async def sing_up(self, user_info: SignUp):
+        user_token = self.user_manager.password_helper.generate()
+        user = User(
+            **user_info.model_dump(exclude_none=True, exclude={"password"}),
+            is_active=True,
+            is_superuser=False,
+        )
+        user.hashed_password = self.user_manager.password_helper.hash(
+            user_info.password
+        )
+        created_user = await self.user_repository.create(user)
+        # access_token = AccessToken(token=user_token, user_id=created_user.id)
+        # self.session.add(access_token)
+        delattr(created_user, "hashed_password")
+        return created_user
+
+        # return {"status_code": status.HTTP_201_CREATED, "transaction": "Successful"}
