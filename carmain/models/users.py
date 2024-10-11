@@ -8,7 +8,9 @@ from carmain.core.db import Base, get_async_session
 
 class User(SQLAlchemyBaseUserTable, Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    sessions: Mapped[list["AccessToken"]] = relationship(back_populates="user")
+    sessions: Mapped[list["AccessToken"]] = relationship(
+        back_populates="user", lazy="joined"
+    )
 
 
 async def get_user_db(session=Depends(get_async_session)):

@@ -7,6 +7,7 @@ from fastapi_users.authentication import CookieTransport, AuthenticationBackend
 from fastapi_users.authentication.strategy import DatabaseStrategy, AccessTokenDatabase
 from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+from passlib.exc import UnknownHashError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
@@ -66,7 +67,7 @@ class AuthService(BaseService):
         self,
         user_repository: Annotated[UserRepository, Depends(UserRepository)],
         user_manager: Annotated[UserManager, Depends(get_user_manager)],
-        session: Annotated[AsyncSession, Depends(get_async_session)],
+        strategy: Annotated[DatabaseStrategy, Depends(get_database_strategy)],
     ):
         self.user_repository = user_repository
         self.user_manager = user_manager
@@ -75,14 +76,23 @@ class AuthService(BaseService):
             transport=cookie_transport,
             get_strategy=get_database_strategy,
         )
-        self.session = session
+        self.strategy = strategy
         super().__init__(user_repository)
 
-    async def sing_in(self, user_info):
-        pass
+    async def sign_in(self, user_info):
+        user: User = await self.user_repository.get_by_email(user_info)
+        try:
+            password_verified = password_helper.password_hash.verify(
+                user_info.password, user.hashed_password
+            )
+        except UnknownHashError:
+            password_verified = False
+        if not user or not password_verified or user.is_active is False:
+            return None
+        await self.auth_backend.login(self.strategy, user)
+        return user
 
     async def sing_up(self, user_info: SignUp):
-        user_token = self.user_manager.password_helper.generate()
         user = User(
             **user_info.model_dump(exclude_none=True, exclude={"password"}),
             is_active=True,
@@ -92,9 +102,10 @@ class AuthService(BaseService):
             user_info.password
         )
         created_user = await self.user_repository.create(user)
-        # access_token = AccessToken(token=user_token, user_id=created_user.id)
-        # self.session.add(access_token)
         delattr(created_user, "hashed_password")
         return created_user
 
-        # return {"status_code": status.HTTP_201_CREATED, "transaction": "Successful"}
+    async def create_access_token(self, user: User) -> AccessToken:
+        user_token = self.user_manager.password_helper.generate()
+        access_token = AccessToken(token=user_token, user_id=user.id)
+        return access_token

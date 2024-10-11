@@ -7,7 +7,7 @@ from alembic import context
 
 from carmain.core.db import Base
 from carmain.models.users import User  # noqa
-from carmain.core.db import AccessToken  # noqa
+from carmain.models.auth import AccessToken  # noqa
 import fastapi_users_db_sqlalchemy  # noqa
 
 

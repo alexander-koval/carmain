@@ -3,7 +3,6 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
-    async_scoped_session,
     AsyncSession,
 )
 from sqlalchemy.orm import DeclarativeBase
@@ -59,21 +58,21 @@ class Base(DeclarativeBase):
 #
 
 
-class Database:
-    def __init__(self, db_url: str) -> None:
-        self._engine = create_async_engine(db_url, echo=True)
-        self._session_factory = async_scoped_session(
-            async_sessionmaker(
-                self._engine, expire_on_commit=False, class_=AsyncSession
-            )
-        )
-
-    async def session(self):
-        session: AsyncSession = self._session_factory()
-        try:
-            yield session
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+# class Database:
+#     def __init__(self, db_url: str) -> None:
+#         self._engine = create_async_engine(db_url, echo=True)
+#         self._session_factory = async_scoped_session(
+#             async_sessionmaker(
+#                 self._engine, expire_on_commit=False, class_=AsyncSession
+#             )
+#         )
+#
+#     async def session(self):
+#         session: AsyncSession = self._session_factory()
+#         try:
+#             yield session
+#         except Exception:
+#             await session.rollback()
+#             raise
+#         finally:
+#             await session.close()
