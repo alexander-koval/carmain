@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import JSONResponse
 
-from carmain.core.db import get_async_session
+from carmain.core.database import get_async_session
 from carmain.models.users import User
 
 from carmain.schema.auth import SignUp, SignIn

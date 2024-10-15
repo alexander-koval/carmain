@@ -7,7 +7,7 @@ from sqlalchemy import Integer, ForeignKey, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, relationship, mapped_column, registry
 
-from carmain.core.db import Base, get_async_session
+from carmain.core.database import Base, get_async_session
 from carmain.models.users import User
 
 

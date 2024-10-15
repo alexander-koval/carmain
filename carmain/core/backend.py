@@ -8,7 +8,7 @@ from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseS
 from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
-from carmain.core import db
+from carmain.core import database
 from carmain.models.auth import AccessToken, get_access_token_db
 from carmain.models.users import User, get_user_db
 
@@ -32,8 +32,8 @@ async def get_user_manager(
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-    reset_password_token_secret = db.settings.secret_key
-    verification_token_secret = db.settings.secret_key
+    reset_password_token_secret = database.settings.secret_key
+    verification_token_secret = database.settings.secret_key
 
     async def on_after_register(
         self, user: models.UP, request: Optional[Request] = None
@@ -50,10 +50,11 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     ) -> None:
         return await super().on_after_request_verify(user, token, request)
 
+
 password_helper = PasswordHelper()
 cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=3600)
 auth_backend = AuthenticationBackend(
-            name="db_session",
-            transport=cookie_transport,
-            get_strategy=get_database_strategy,
-        )
+    name="db_session",
+    transport=cookie_transport,
+    get_strategy=get_database_strategy,
+)

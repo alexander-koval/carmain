@@ -1,6 +1,6 @@
 from dependency_injector import containers, providers
 
-from carmain.core.db import Database, settings
+from carmain.core.database import Database, settings
 
 
 class Container(containers.DeclarativeContainer):

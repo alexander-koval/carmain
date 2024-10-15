@@ -4,7 +4,7 @@ from IPython import embed
 from fastapi import Depends
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
-from carmain.core.db import Base
+from carmain.core.database import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update, insert, delete  # noqa

@@ -4,7 +4,7 @@ from sqlalchemy import select, update, insert, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from carmain.core.db import get_async_session, Base
+from carmain.core.database import get_async_session, Base
 from carmain.core.exceptions import DuplicatedError, NotFoundError
 from carmain.repository.repository import Repository, M
 

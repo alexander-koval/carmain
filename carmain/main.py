@@ -6,24 +6,24 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from carmain import backend
 from carmain.admin.users import UserAdmin, AccessTokenAdmin
-from carmain.backend import get_user_manager
-from carmain.core.db import engine, settings
-from carmain.routers import auth
+from carmain.core import database, backend
 
 carmain = FastAPI(title="Carmain", debug=True)
 
-admin = Admin(carmain, engine=engine)
+admin = Admin(carmain, engine=database.engine)
 admin.add_view(UserAdmin)
 admin.add_view(AccessTokenAdmin)
 
 # carmain.include_router(auth.router)
-carmain.include_router(get_auth_router(
-    backend.auth_backend,
-    get_user_manager,
-    Authenticator([backend.auth_backend], get_user_manager),
-), prefix="/auth")
+carmain.include_router(
+    get_auth_router(
+        backend.auth_backend,
+        backend.get_user_manager,
+        Authenticator([backend.auth_backend], backend.get_user_manager),
+    ),
+    prefix="/auth",
+)
 
 # @carmain.middleware("http")
 # async def validate_user(request: Request, call_next):
@@ -36,7 +36,7 @@ carmain.include_router(get_auth_router(
 
 @carmain.get("/")
 async def welcome(request: Request) -> dict:
-    return {"message": f"Welcome user"}
+    return {"message": "Welcome user"}
     # return {"message": f"Welcome {request.session}"}
 
 

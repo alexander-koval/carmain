@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
 
-from carmain.core import db
+from carmain.core import database
 from carmain.models.auth import AccessToken, get_access_token_db, get_async_session
 from carmain.models.users import User, get_user_db
 from carmain.repository.user_repository import UserRepository
@@ -21,8 +21,8 @@ from carmain.services.base_service import BaseService
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-    reset_password_token_secret = db.settings.secret_key
-    verification_token_secret = db.settings.secret_key
+    reset_password_token_secret = database.settings.secret_key
+    verification_token_secret = database.settings.secret_key
 
     async def on_after_register(
         self, user: models.UP, request: Optional[Request] = None

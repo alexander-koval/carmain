@@ -3,7 +3,7 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from carmain.core.db import Base, get_async_session
+from carmain.core.database import Base, get_async_session
 
 
 class User(SQLAlchemyBaseUserTable, Base):

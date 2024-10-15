@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from carmain.core.db import get_async_session
+from carmain.core.database import get_async_session
 from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
 from carmain.schema.auth import SignIn
