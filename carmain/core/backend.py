@@ -32,7 +32,7 @@ def get_database_strategy(
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(
-        secret=database.settings.secret_key, lifetime_seconds=3600, algorithm="RS256"
+        secret=database.settings.secret_key, lifetime_seconds=3600, algorithm="HS256"
     )
 
 
