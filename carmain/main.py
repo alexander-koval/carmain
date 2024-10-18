@@ -1,14 +1,8 @@
-from fastapi import FastAPI, Request, Depends
-from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import Authenticator
-from fastapi_users.router import get_auth_router
+from fastapi import FastAPI, Depends
 from sqladmin import Admin
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from carmain.admin.users import UserAdmin, AccessTokenAdmin
-from carmain.core import database, backend
+from carmain.core import database
 from carmain.models.users import User
 from carmain.routers import auth
 
@@ -18,46 +12,16 @@ admin = Admin(carmain, engine=database.engine)
 admin.add_view(UserAdmin)
 admin.add_view(AccessTokenAdmin)
 
-# carmain.include_router(auth.router)
+
+carmain.include_router(auth.auth_router, prefix="/auth", tags=["auth"])
+carmain.include_router(auth.register_router, prefix="/auth", tags=["register"])
+carmain.include_router(auth.verify_router, prefix="/auth", tags=["verify"])
 carmain.include_router(
-    # get_auth_router(
-    #     backend.auth_backend,
-    #     backend.get_user_manager,
-    #     Authenticator([backend.auth_backend], backend.get_user_manager),
-    # ),
-    auth.fastapi_users.get_auth_router(backend.auth_backend),
-    prefix="/auth",
-    tags=["auth"],
+    auth.reset_password_router, prefix="/auth_reset", tags=["reset_password"]
 )
-
-# TODO: register router
-# carmain.include_router(
-#     auth.fastapi_users.get_register_router()
-# )
-
-# TODO: verify router
-# carmain.include_router(auth.fastapi_users.get_verify_router())
-
-carmain.include_router(
-    auth.fastapi_users.get_reset_password_router(),
-    prefix="/auth",
-    tags=["auth"],
-)
-
-# @carmain.middleware("http")
-# async def validate_user(request: Request, call_next):
-#     print(
-#         request.session
-#     )  # <--- Error: 'AssertionError: SessionMiddleware must be installed to access request.session'
-#     response = await call_next(request)
-#     return response
+carmain.include_router(auth.users_router, prefix="/users", tags=["users"])
 
 
 @carmain.get("/")
 async def welcome(user: User = Depends(auth.current_user)) -> dict:
     return {"message": f"Welcome {user.email}"}
-
-
-# carmain.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
-# carmain.add_middleware(CORSMiddleware, allow_origins=["*"])
-# carmain.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])

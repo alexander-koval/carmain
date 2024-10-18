@@ -1,9 +1,20 @@
 from pydantic import BaseModel
 
 
-class CreateUser(BaseModel):
-    first_name: str
-    last_name: str
-    username: str
-    email: str
-    password: str
+from fastapi_users import schemas
+
+
+class User(schemas.BaseUser[int]):
+    pass
+
+
+class UserRead(User):
+    pass
+
+
+class UserCreate(schemas.BaseUserCreate):
+    pass
+
+
+class UserUpdate(schemas.BaseUserUpdate):
+    pass

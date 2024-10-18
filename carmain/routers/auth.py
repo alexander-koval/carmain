@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import JSONResponse
 
+from carmain.schema import auth
+from carmain.schema import users
 from carmain.core import backend
 from carmain.core.database import get_async_session
 from carmain.models.users import User
@@ -22,6 +24,14 @@ current_active_verified_user = fastapi_users.current_user(active=True, verified=
 current_superuser = fastapi_users.current_user(active=True, superuser=True)
 
 
+auth_router = fastapi_users.get_auth_router(backend.auth_backend)
+register_router = fastapi_users.get_register_router(users.User, users.UserCreate)
+verify_router = fastapi_users.get_verify_router(users.User)
+reset_password_router = fastapi_users.get_reset_password_router()
+
+users_router = fastapi_users.get_users_router(
+    users.User, users.UserUpdate, requires_verification=True
+)
 # from carmain.schema.auth import SignUp, SignIn
 # from carmain.services.auth_service import AuthService
 #
