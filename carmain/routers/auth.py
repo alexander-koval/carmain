@@ -15,16 +15,22 @@ from carmain.models.users import User
 
 
 fastapi_users = FastAPIUsers[User, int](
-    backend.get_user_manager, [backend.auth_backend]
+    backend.get_user_manager, backend.get_backends()
 )
 
-current_user = fastapi_users.current_user()
-current_active_user = fastapi_users.current_user(active=True)
-current_active_verified_user = fastapi_users.current_user(active=True, verified=True)
-current_superuser = fastapi_users.current_user(active=True, superuser=True)
+current_user = fastapi_users.current_user(get_enabled_backends=backend.get_backends)
+current_active_user = fastapi_users.current_user(
+    active=True, get_enabled_backends=backend.get_backends
+)
+current_active_verified_user = fastapi_users.current_user(
+    active=True, verified=True, get_enabled_backends=backend.get_backends
+)
+current_superuser = fastapi_users.current_user(
+    active=True, superuser=True, get_enabled_backends=backend.get_backends
+)
 
 
-auth_router = fastapi_users.get_auth_router(backend.auth_backend)
+auth_router = fastapi_users.get_auth_router(backend.cookie_backend)
 register_router = fastapi_users.get_register_router(users.User, users.UserCreate)
 verify_router = fastapi_users.get_verify_router(users.User)
 reset_password_router = fastapi_users.get_reset_password_router()

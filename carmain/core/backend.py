@@ -3,7 +3,12 @@ from typing import Optional, Annotated
 
 from fastapi import Request, Depends
 from fastapi_users import IntegerIDMixin, BaseUserManager, models
-from fastapi_users.authentication import CookieTransport, AuthenticationBackend
+from fastapi_users.authentication import (
+    CookieTransport,
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
 from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseStrategy
 from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
@@ -22,6 +27,12 @@ def get_database_strategy(
     return DatabaseStrategy(
         database=access_token_db,
         lifetime_seconds=lifetime,
+    )
+
+
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(
+        secret=database.settings.secret_key, lifetime_seconds=3600, algorithm="RS256"
     )
 
 
@@ -52,9 +63,17 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 
 
 password_helper = PasswordHelper()
+bearer_transport = BearerTransport(tokenUrl="/auth/login")
 cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=3600)
-auth_backend = AuthenticationBackend(
-    name="db_session",
+jwt_backend = AuthenticationBackend(
+    name="jwt_session", transport=bearer_transport, get_strategy=get_jwt_strategy
+)
+cookie_backend = AuthenticationBackend(
+    name="cookie_session",
     transport=cookie_transport,
     get_strategy=get_database_strategy,
 )
+
+
+def get_backends():
+    return [cookie_backend, jwt_backend]
