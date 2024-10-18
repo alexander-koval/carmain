@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Depends
 from sqladmin import Admin
 
+from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
+from carmain.admin.records import ServiceRecordAdmin
 from carmain.admin.users import UserAdmin, AccessTokenAdmin
+from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
 from carmain.routers import auth
@@ -11,6 +14,10 @@ carmain = FastAPI(title="Carmain", debug=True)
 admin = Admin(carmain, engine=database.engine)
 admin.add_view(UserAdmin)
 admin.add_view(AccessTokenAdmin)
+admin.add_view(MaintenanceItemAdmin)
+admin.add_view(UserMaintenanceItemAdmin)
+admin.add_view(VehicleAdmin)
+admin.add_view(ServiceRecordAdmin)
 
 
 carmain.include_router(auth.auth_router, prefix="/auth", tags=["auth"])
