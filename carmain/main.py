@@ -25,3 +25,23 @@ carmain.include_router(auth.users_router, prefix="/users", tags=["users"])
 @carmain.get("/")
 async def welcome(user: User = Depends(auth.current_user)) -> dict:
     return {"message": f"Welcome {user.email}"}
+
+
+# def custom_openapi():
+#     # if carmain.openapi_schema:
+#     #     return carmain.openapi_schema
+#     openapi_schema = get_openapi(
+#         title="Carmain",
+#         version="0.0.1",
+#         description="Car Maintenance Tool",
+#         routes=carmain.routes,
+#     )
+#     openapi_schema["components"]["securitySchemes"] = {
+#         "cookieAuth": {"type": "apiKey", "in": "cookie", "name": "token"}
+#     }
+#     openapi_schema["security"] = [{"cookieAuth": []}]
+#     carmain.openapi_schema = openapi_schema
+#     return carmain.openapi_schema
+#
+#
+# carmain.openapi = custom_openapi
