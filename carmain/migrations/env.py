@@ -6,8 +6,11 @@ from sqlalchemy import pool
 from alembic import context
 
 from carmain.core.database import Base
-from carmain.models.users import User  # noqa
-from carmain.models.auth import AccessToken  # noqa
+from carmain.models.users import *  # noqa
+from carmain.models.auth import *  # noqa
+from carmain.models.vehicles import *  # noqa
+from carmain.models.items import *  # noqa
+from carmain.models.records import *  # noqa
 import fastapi_users_db_sqlalchemy  # noqa
 
 
