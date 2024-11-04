@@ -11,6 +11,12 @@ class User(SQLAlchemyBaseUserTable, Base):
     sessions: Mapped[list["AccessToken"]] = relationship(
         back_populates="user", lazy="joined"
     )
+    vehicles: Mapped[list["Vehicle"]] = relationship(
+        back_populates="user", lazy="joined"
+    )
+
+    def __str__(self):
+        return f"{self.email}"
 
 
 async def get_user_db(session=Depends(get_async_session)):

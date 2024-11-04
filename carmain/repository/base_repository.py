@@ -20,21 +20,22 @@ class BaseRepository(Repository[K, M]):
         self,
         obj_id: K,
         eager=False,
-    ):
-        query = select(M)
+    ) -> M:
+        query = select(self.model)
         # query = await self.session.query(self.model)
         if eager:
             for eager in getattr(self.model, "eagers", []):
                 query = query.options(joinedload(getattr(M, eager)))
-        query = query.where(M.id == obj_id).first()
-        if not query:
+        query = query.where(self.model.id == obj_id)
+        result = await self.session.scalar(query)
+        if not result:
             raise NotFoundError(detail=f"not found id : {obj_id}")
-        return await self.session.scalar(query)
+        return result
 
-    async def all(self):
+    async def all(self) -> list[M]:
         return await self.session.scalars(select(self.model))
 
-    async def create(self, obj: M):
+    async def create(self, obj: M) -> M:
         try:
             self.session.add(obj)
             await self.session.commit()
@@ -43,16 +44,23 @@ class BaseRepository(Repository[K, M]):
             raise DuplicatedError(detail=str(e.orig))
         return obj
 
-    async def update_by_id(self, obj_id: K, obj: M) -> M:
+    async def update_by_id(self, obj_id: K, schema) -> M:
         await self.session.execute(
-            update(M.dict(exclude_none=True)).where(self.model.id == obj_id)
+            update(self.model)
+            .where(self.model.id == obj_id)
+            .values(
+                schema.model_dump(
+                    exclude_none=True, exclude_unset=True, exclude_defaults=True
+                )
+            )
         )
         await self.session.commit()
         return await self.get_by_id(obj_id)
 
-    async def delete_by_id(self, obj_id: K):
-        obj = await self.session.execute(
-            delete(self.model).where(self.model.id == obj_id)
+    async def delete_by_id(self, obj_id: K) -> M:
+        obj = await self.session.scalar(
+            select(self.model).where(self.model.id == obj_id)
         )
+        await self.session.delete(obj)
         await self.session.commit()
         return obj
