@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from carmain.core.database import get_async_session
 from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
-from carmain.schema.auth import SignIn
+from carmain.schema.auth_schema import SignIn
 
 
 class UserRepository(BaseRepository):
@@ -15,7 +15,7 @@ class UserRepository(BaseRepository):
         self,
         session: Annotated[AsyncSession, Depends(get_async_session)],
     ) -> None:
-        super().__init__(User, session)
+        super().__init__(session)
 
     async def get_by_email(self, user_info: SignIn) -> User:
         obj = await self.session.scalar(

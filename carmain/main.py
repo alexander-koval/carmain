@@ -7,7 +7,7 @@ from carmain.admin.users import UserAdmin, AccessTokenAdmin
 from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
-from carmain.routers import auth
+from carmain.routers import auth_router, vehicle_router
 
 carmain = FastAPI(title="Carmain", debug=True)
 
@@ -20,17 +20,18 @@ admin.add_view(VehicleAdmin)
 admin.add_view(ServiceRecordAdmin)
 
 
-carmain.include_router(auth.auth_router, prefix="/auth", tags=["auth"])
-carmain.include_router(auth.register_router, prefix="/auth", tags=["register"])
-carmain.include_router(auth.verify_router, prefix="/auth", tags=["verify"])
+carmain.include_router(auth_router.auth_router, prefix="/auth", tags=["auth"])
+carmain.include_router(auth_router.register_router, prefix="/auth", tags=["register"])
+carmain.include_router(auth_router.verify_router, prefix="/auth", tags=["verify"])
 carmain.include_router(
-    auth.reset_password_router, prefix="/auth_reset", tags=["reset_password"]
+    auth_router.reset_password_router, prefix="/auth_reset", tags=["reset_password"]
 )
-carmain.include_router(auth.users_router, prefix="/users", tags=["users"])
+carmain.include_router(auth_router.users_router, prefix="/users", tags=["users"])
+carmain.include_router(vehicle_router.vehicle_router)
 
 
 @carmain.get("/")
-async def welcome(user: User = Depends(auth.current_user)) -> dict:
+async def welcome(user: User = Depends(auth_router.current_user)) -> dict:
     return {"message": f"Welcome {user.email}"}
 
 

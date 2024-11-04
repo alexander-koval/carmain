@@ -1,18 +1,25 @@
+from typing import Protocol, TypeVar
+
+from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
 
+# Type definition for schema
+S = TypeVar("S")
 
-class BaseService:
-    def __init__(self, repository: BaseRepository) -> None:
-        self._repository = repository
+# Type definition for model
+M = TypeVar("M")
 
-    def get_by_id(self, obj_id: int):
-        return self._repository.read_by_id(obj_id)
+# Type definition for Unique id
+K = TypeVar("K")
 
-    def add(self, schema):
-        return self._repository.create(schema)
 
-    def patch(self, obj_id: int, schema):
-        return self._repository.update(obj_id, schema)
+class BaseService(Protocol[K, S]):
+    async def get_by_id(self, obj_id: K) -> S: ...
 
-    def remove_by_id(self, obj_id: int):
-        return self._repository.delete_by_id(obj_id)
+    async def add(self, schema: S) -> S: ...
+
+    async def patch(self, obj_id: K, schema: S) -> S: ...
+
+    async def remove_by_id(self, obj_id: K) -> S: ...
+
+    async def all(self) -> list[S]: ...

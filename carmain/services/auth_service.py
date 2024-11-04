@@ -16,7 +16,7 @@ from carmain.core import database
 from carmain.models.auth import AccessToken, get_access_token_db, get_async_session
 from carmain.models.users import User, get_user_db
 from carmain.repository.user_repository import UserRepository
-from carmain.schema.auth import SignUp  # , SignInResponse
+from carmain.schema.auth_schema import SignUp  # , SignInResponse
 from carmain.services.base_service import BaseService
 
 
