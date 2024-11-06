@@ -29,7 +29,8 @@ class VehicleService(BaseService[uuid.UUID, VehicleSchema, Vehicle]):
         return await self.repository.create(vehicle)
 
     async def patch(self, obj_id: uuid.UUID, schema: VehicleSchema) -> Vehicle:
-        return await self.repository.update_by_id(obj_id, schema)
+        vehicle = Vehicle(**schema.model_dump())
+        return await self.repository.update_by_id(obj_id, vehicle)
 
     async def remove_by_id(self, obj_id: uuid.UUID) -> Vehicle:
         return await self.repository.delete_by_id(obj_id)

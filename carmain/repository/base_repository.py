@@ -44,20 +44,23 @@ class BaseRepository(Repository[K, M]):
             raise DuplicatedError(detail=str(e.orig))
         return obj
 
-    async def update_by_id(self, obj_id: K, schema) -> M:
-        await self.session.execute(
-            update(self.model)
-            .where(self.model.id == obj_id)
-            .values(
-                schema.model_dump(
-                    exclude_none=True, exclude_unset=True, exclude_defaults=True
-                )
-            )
-        )
+    async def update_by_id(self, obj_id: K, obj: M) -> M:
+        obj.id = obj_id
+        # await self.session.execute(
+        #     update(self.model)
+        #     .where(self.model.id == obj_id)
+        #     .values(
+        #         schema.model_dump(
+        #             exclude_none=True, exclude_unset=True, exclude_defaults=True
+        #         )
+        #     )
+        # )
+        await self.session.merge(obj)
         await self.session.commit()
         return await self.get_by_id(obj_id)
 
     async def delete_by_id(self, obj_id: K) -> M:
+        # obj = await self.session.get(obj_id)
         obj = await self.session.scalar(
             select(self.model).where(self.model.id == obj_id)
         )
