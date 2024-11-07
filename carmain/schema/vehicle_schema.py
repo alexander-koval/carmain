@@ -1,7 +1,8 @@
 import datetime
 import uuid
+from typing import Self, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from pydantic_partial import PartialModelMixin, create_partial_model
 
 

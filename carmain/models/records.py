@@ -9,7 +9,9 @@ from carmain.core.database import Base
 class ServiceRecord(Base):
     __tablename__ = "service_record"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, default=uuid.uuid4
+    )
     user_item_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("user_maintenance_item.id")
     )

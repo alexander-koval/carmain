@@ -9,7 +9,9 @@ from carmain.core.database import Base
 class MaintenanceItem(Base):
     __tablename__ = "maintenance_item"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, index=True, default=uuid.uuid4
+    )
     name: Mapped[str] = mapped_column(String(128))
     default_interval: Mapped[int] = mapped_column(Integer)
 
@@ -17,7 +19,9 @@ class MaintenanceItem(Base):
 class UserMaintenanceItem(Base):
     __tablename__ = "user_maintenance_item"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, index=True, default=uuid.uuid4
+    )
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
     item_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("maintenance_item.id"))
     vehicle_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("vehicle.id"))

@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends
+import logging
+from fastapi import FastAPI, Depends, Request, status
+from fastapi.exceptions import RequestValidationError
 from sqladmin import Admin
 
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
@@ -8,6 +10,9 @@ from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
 from carmain.routers import auth_router, vehicle_router
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 carmain = FastAPI(title="Carmain", debug=True)
 
@@ -33,6 +38,16 @@ carmain.include_router(vehicle_router.vehicle_router)
 @carmain.get("/")
 async def welcome(user: User = Depends(auth_router.current_user)) -> dict:
     return {"message": f"Welcome {user.email}"}
+
+
+@carmain.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
+    logging.error(f"{request}: {exc_str}")
+    content = {"status_code": 10422, "message": exc_str, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 # def custom_openapi():

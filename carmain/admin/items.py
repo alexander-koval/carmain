@@ -3,7 +3,8 @@ from carmain.models import items
 
 
 class MaintenanceItemAdmin(ModelView, model=items.MaintenanceItem):
-    column_list = [items.MaintenanceItem.id]
+    column_default_sort = "name"
+    column_list = [items.MaintenanceItem.name, items.MaintenanceItem.default_interval]
 
 
 class UserMaintenanceItemAdmin(ModelView, model=items.UserMaintenanceItem):

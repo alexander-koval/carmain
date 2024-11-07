@@ -13,7 +13,7 @@ class Vehicle(Base):
     __tablename__ = "vehicle"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, index=True, default=uuid.uuid4()
+        Uuid, primary_key=True, index=True, default=uuid.uuid4
     )
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
     brand: Mapped[str] = mapped_column(String(64))
