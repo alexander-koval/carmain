@@ -21,6 +21,7 @@ class Vehicle(Base):
     year: Mapped[datetime.date] = mapped_column(Date)
     odometer: Mapped[int] = mapped_column(Integer)
     user: Mapped[User] = relationship(back_populates="vehicles")
+    maintenance_items: Mapped[list["UserMaintenanceItem"]] = relationship(back_populates="vehicle")
 
     def __str__(self):
         return f"{self.brand} {self.model}"

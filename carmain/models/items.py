@@ -5,6 +5,7 @@ from sqlalchemy import Uuid, Integer, ForeignKey, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from carmain.core.database import Base
 from carmain.models.users import User
+from carmain.models.vehicles import Vehicle
 
 
 class MaintenanceItem(Base):
@@ -39,5 +40,6 @@ class UserMaintenanceItem(Base):
         DateTime, nullable=True
     )
     user: Mapped[User] = relationship(back_populates="maintenance_items")
+    vehicle: Mapped[Vehicle] = relationship(back_populates="maintenance_items")
     maintenance_item: Mapped[MaintenanceItem] = relationship(back_populates="user_maintenance_items")
 
