@@ -3,6 +3,7 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from carmain.core.database import Base, get_async_session
 
 
@@ -12,6 +13,9 @@ class User(SQLAlchemyBaseUserTable, Base):
         back_populates="user", lazy="joined"
     )
     vehicles: Mapped[list["Vehicle"]] = relationship(
+        back_populates="user", lazy="joined"
+    )
+    maintenance_items: Mapped[list["UserMaintenanceItem"]] = relationship(
         back_populates="user", lazy="joined"
     )
 

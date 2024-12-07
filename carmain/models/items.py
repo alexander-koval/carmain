@@ -2,8 +2,9 @@ import datetime
 import uuid
 
 from sqlalchemy import Uuid, Integer, ForeignKey, String, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from carmain.core.database import Base
+from carmain.models.users import User
 
 
 class MaintenanceItem(Base):
@@ -14,6 +15,13 @@ class MaintenanceItem(Base):
     )
     name: Mapped[str] = mapped_column(String(128))
     default_interval: Mapped[int] = mapped_column(Integer)
+    user_maintenance_items: Mapped[list["UserMaintenanceItem"]] = relationship(
+        back_populates="maintenance_item", lazy="joined"
+    )
+
+    def __str__(self):
+        return f"{self.name}"
+        # return super().__str__()
 
 
 class UserMaintenanceItem(Base):
@@ -30,3 +38,6 @@ class UserMaintenanceItem(Base):
     last_service_date: Mapped[datetime.datetime] = mapped_column(
         DateTime, nullable=True
     )
+    user: Mapped[User] = relationship(back_populates="maintenance_items")
+    maintenance_item: Mapped[MaintenanceItem] = relationship(back_populates="user_maintenance_items")
+

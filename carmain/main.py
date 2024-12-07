@@ -1,6 +1,5 @@
 import logging
 from fastapi import FastAPI, Depends, Request, status
-from fastapi.exceptions import RequestValidationError
 from sqladmin import Admin
 
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
