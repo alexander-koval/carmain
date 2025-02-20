@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 from sqlalchemy import Uuid, Integer, ForeignKey, String, DateTime, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from carmain.core.database import Base
 
 
@@ -18,3 +18,6 @@ class ServiceRecord(Base):
     service_date: Mapped[datetime.datetime] = mapped_column(DateTime)
     service_odometer: Mapped[int] = mapped_column(Integer)
     comment: Mapped[str] = mapped_column(String(1024))
+    user_maintenance_item = relationship(
+        "UserMaintenanceItem", backref="service_records"
+    )

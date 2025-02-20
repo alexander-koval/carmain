@@ -41,5 +41,6 @@ class UserMaintenanceItem(Base):
     )
     user: Mapped[User] = relationship(back_populates="maintenance_items")
     vehicle: Mapped[Vehicle] = relationship(back_populates="maintenance_items")
-    maintenance_item: Mapped[MaintenanceItem] = relationship(back_populates="user_maintenance_items")
-
+    maintenance_item: Mapped[MaintenanceItem] = relationship(
+        back_populates="user_maintenance_items"
+    )

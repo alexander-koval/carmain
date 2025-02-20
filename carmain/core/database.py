@@ -11,11 +11,19 @@ from sqlalchemy.orm import DeclarativeBase
 
 from carmain.core.config import get_settings
 
+# from sqlalchemy import event
+# from loguru import logger
+
 settings = get_settings()
 engine = create_async_engine(f"sqlite+aiosqlite:///{settings.db_name}.db", echo=True)
 async_session_maker = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession, autoflush=False
 )
+
+
+# @event.listens_for(engine.sync_engine, "before_cursor_execute")
+# def log_sql_statements(conn, cursor, statement, parameters, context, executemany):
+#     logger.info(f"Executing: {statement} with parameters: {parameters}")
 
 
 class Base(DeclarativeBase):
