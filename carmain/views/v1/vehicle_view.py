@@ -24,5 +24,5 @@ async def get(
     vehicle = await vehicle_service.get_by_id(obj_id)
     schema = VehicleSchema.model_validate(vehicle)
     return templates.TemplateResponse(
-        request=request, name="vehicle.html", context={"id": obj_id}
+        request=request, name="vehicle.html", context={"vehicle": schema}
     )
