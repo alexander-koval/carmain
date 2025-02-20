@@ -6,8 +6,8 @@ from carmain.core.database import Database, settings
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         # modules=[
-        #     "carmain.api.v1.endpoints.auth",
-        #     "carmain.api.v1.endpoints.user",
+        #     "carmain.routers.v1.endpoints.auth",
+        #     "carmain.routers.v1.endpoints.user",
         # ]
     )
 

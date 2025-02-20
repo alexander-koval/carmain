@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Depends, Request, status
+from fastapi import Depends
 from sqladmin import Admin
 
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
@@ -8,7 +8,7 @@ from carmain.admin.users import UserAdmin, AccessTokenAdmin
 from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
-from carmain.routers import auth_router, vehicle_router
+from carmain.routers.v1 import auth_router, vehicle_router
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
