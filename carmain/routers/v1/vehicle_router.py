@@ -10,7 +10,7 @@ from carmain.schema.vehicle_schema import (
 )
 from carmain.services.vehicle_service import VehicleService
 
-vehicle_router = APIRouter(prefix="/vehicles", tags=["vehicles"])
+vehicle_router = APIRouter(prefix="/api/v1/vehicles", tags=["vehicles"])
 
 
 @vehicle_router.get(path="/", response_model=List[VehicleSchema])
@@ -20,7 +20,7 @@ async def index(
     return await vehicle_service.all()
 
 
-@vehicle_router.get(path="/{id}", response_model=VehicleSchema)
+@vehicle_router.get(path="/{obj_id}", response_model=VehicleSchema)
 async def get(obj_id: uuid.UUID, vehicle_service: VehicleService = Depends()):
     return await vehicle_service.get_by_id(obj_id)
 
@@ -42,6 +42,6 @@ async def update(
     return await vehicle_service.patch(obj_id, vehicle)
 
 
-@vehicle_router.delete(path="/{id}", response_model=VehicleSchema)
+@vehicle_router.delete(path="/{obj_id}", response_model=VehicleSchema)
 async def delete(obj_id: uuid.UUID, vehicle_service: VehicleService = Depends()):
     return await vehicle_service.remove_by_id(obj_id)

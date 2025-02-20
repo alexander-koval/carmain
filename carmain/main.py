@@ -9,11 +9,15 @@ from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
+from carmain.views.v1 import vehicle_view
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 carmain = FastAPI(title="Carmain", debug=True)
+
+carmain.mount("/static", StaticFiles(directory="carmain/static"), name="static")
 
 admin = Admin(carmain, engine=database.engine)
 admin.add_view(UserAdmin)
@@ -32,6 +36,7 @@ carmain.include_router(
 )
 carmain.include_router(auth_router.users_router, prefix="/users", tags=["users"])
 carmain.include_router(vehicle_router.vehicle_router)
+carmain.include_router(vehicle_view.vehicle_router)
 
 
 @carmain.get("/")

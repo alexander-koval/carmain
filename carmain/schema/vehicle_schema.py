@@ -2,11 +2,13 @@ import datetime
 import uuid
 from typing import Self, Optional
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model, ConfigDict
 from pydantic_partial import PartialModelMixin, create_partial_model
 
 
 class VehicleSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     brand: str
     model: str
     year: datetime.date
