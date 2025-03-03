@@ -9,6 +9,7 @@ from carmain.admin.vehicles import VehicleAdmin
 from carmain.core import database
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
+from carmain.views import auth_router as auth_view_router
 from carmain.views.v1 import vehicle_view
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -27,10 +28,12 @@ admin.add_view(UserMaintenanceItemAdmin)
 admin.add_view(VehicleAdmin)
 admin.add_view(ServiceRecordAdmin)
 
-
-carmain.include_router(auth_router.auth_router, prefix="/auth", tags=["auth"])
-carmain.include_router(auth_router.register_router, prefix="/auth", tags=["register"])
-carmain.include_router(auth_router.verify_router, prefix="/auth", tags=["verify"])
+carmain.include_router(auth_view_router.auth_view_router)
+carmain.include_router(auth_router.auth_router, prefix="/v1/auth", tags=["auth"])
+carmain.include_router(
+    auth_router.register_router, prefix="/v1/auth", tags=["register"]
+)
+carmain.include_router(auth_router.verify_router, prefix="/v1/auth", tags=["verify"])
 carmain.include_router(
     auth_router.reset_password_router, prefix="/auth_reset", tags=["reset_password"]
 )
