@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, EmailStr
 
 from fastapi_users import schemas
 
@@ -18,3 +17,9 @@ class UserCreate(schemas.BaseUserCreate):
 
 class UserUpdate(schemas.BaseUserUpdate):
     pass
+
+
+class SignUpFormData(BaseModel):
+    email: EmailStr
+    password: str
+    confirm_password: str

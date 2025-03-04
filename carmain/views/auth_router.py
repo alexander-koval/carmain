@@ -1,18 +1,31 @@
-from fastapi import APIRouter, Depends
-from fastapi import status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Form
+
 from fastapi_users.authentication import Strategy
-from fastapi_users import models
+from fastapi_users import models, exceptions
+from fastapi_users.router.common import ErrorCode
+from pydantic import EmailStr
+from starlette.responses import RedirectResponse
 
 from carmain.core.backend import get_user_manager, UserManager, cookie_backend
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.requests import Request
 from urllib.parse import quote
 
+from carmain.schema.user_schema import UserCreate, SignUpFormData
 
 auth_view_router = APIRouter(prefix="/auth", tags=["auth"])
 templates = Jinja2Templates(directory="carmain/templates")
+
+
+async def get_signup_form_data(
+    email: EmailStr = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+) -> SignUpFormData:
+    return SignUpFormData(
+        email=email, password=password, confirm_password=confirm_password
+    )
 
 
 @auth_view_router.get("/login", response_class=HTMLResponse)
@@ -42,3 +55,23 @@ async def login_action(
         response.headers["location"] = quote(str("/"), safe=":/%#?=@[]!$&'()*+,;")
         response.status_code = status.HTTP_303_SEE_OTHER
         return response
+
+
+@auth_view_router.post("/signup")
+async def signup_action(
+    request: Request,
+    form_data: SignUpFormData = Depends(get_signup_form_data),
+    user_manager: UserManager = Depends(get_user_manager),
+):
+    user_create = UserCreate(email=form_data.email, password=form_data.password)
+    try:
+        await user_manager.create(user_create, safe=True, request=request)
+    except exceptions.UserAlreadyExists as e:
+        return templates.TemplateResponse(
+            "signup.html", {"request": request, "error": "Account already exists"}
+        )
+    except exceptions.InvalidPasswordException as e:
+        return templates.TemplateResponse(
+            "signup.html", {"request": request, "error": e.reason}
+        )
+    return RedirectResponse("/auth/login", status_code=303)
