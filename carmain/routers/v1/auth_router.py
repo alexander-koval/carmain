@@ -18,6 +18,7 @@ current_active_verified_user = fastapi_users.current_user(
 current_superuser = fastapi_users.current_user(
     active=True, superuser=True, get_enabled_backends=backend.get_backends
 )
+optional_user = fastapi_users.current_user(optional=True)
 
 
 auth_router = fastapi_users.get_auth_router(backend.cookie_backend)

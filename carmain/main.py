@@ -1,6 +1,7 @@
 import logging
 from fastapi import Depends
 from sqladmin import Admin
+from fastapi.responses import RedirectResponse
 
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
 from carmain.admin.records import ServiceRecordAdmin
@@ -42,9 +43,16 @@ carmain.include_router(vehicle_router.vehicle_router)
 carmain.include_router(vehicle_view.vehicle_router)
 
 
+# @carmain.get("/")
+# async def welcome(user: User = Depends(auth_router.current_user)) -> dict:
+#     return {"message": f"Welcome {user.email}"}
+
+
 @carmain.get("/")
-async def welcome(user: User = Depends(auth_router.current_user)) -> dict:
-    return {"message": f"Welcome {user.email}"}
+async def index(user: User = Depends(auth_router.optional_user)):
+    if user and user.is_active and user.is_verified:
+        return RedirectResponse(url="/garage")
+    return RedirectResponse(url="/auth/login")
 
 
 @carmain.exception_handler(RequestValidationError)
