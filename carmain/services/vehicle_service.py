@@ -41,3 +41,7 @@ class VehicleService(BaseService[uuid.UUID, VehicleSchema, Vehicle]):
 
     async def all(self) -> list[Vehicle]:
         return await self.repository.all()
+        
+    async def get_user_vehicles(self) -> list[Vehicle]:
+        """Get all vehicles belonging to the current user"""
+        return await self.repository.get_by_user_id(self.user.id)

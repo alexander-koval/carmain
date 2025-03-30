@@ -2,6 +2,7 @@ import logging
 from fastapi import Depends
 from sqladmin import Admin
 from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
 
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
 from carmain.admin.records import ServiceRecordAdmin
@@ -47,11 +48,22 @@ carmain.include_router(vehicle_view.vehicle_router)
 # async def welcome(user: User = Depends(auth_router.current_user)) -> dict:
 #     return {"message": f"Welcome {user.email}"}
 
+templates = Jinja2Templates(directory="carmain/templates")
+
 
 @carmain.get("/")
-async def index(user: User = Depends(auth_router.optional_user)):
+async def index(
+    request: Request, 
+    user: User = Depends(auth_router.optional_user),
+    vehicle_service: vehicle_view.VehicleService = Depends()
+):
     if user and user.is_active and user.is_verified:
-        return RedirectResponse(url="/garage")
+        vehicles = await vehicle_service.get_user_vehicles()
+        return templates.TemplateResponse(
+            request=request, 
+            name="index.html", 
+            context={"vehicles": vehicles, "user": user}
+        )
     return RedirectResponse(url="/auth/login")
 
 
