@@ -57,14 +57,17 @@ async def index(
     user: User = Depends(auth_router.optional_user),
     vehicle_service: vehicle_view.VehicleService = Depends()
 ):
-    if user and user.is_active and user.is_verified:
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    
+    if user.is_active and user.is_verified:
         vehicles = await vehicle_service.get_user_vehicles()
         return templates.TemplateResponse(
             request=request, 
             name="index.html", 
             context={"vehicles": vehicles, "user": user}
         )
-    return RedirectResponse(url="/auth/login")
+    return RedirectResponse(url="/auth/login", status_code=302)
 
 
 @carmain.exception_handler(RequestValidationError)
@@ -75,6 +78,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
+
+
+# Middleware для обработки 401 ошибок и перенаправления на страницу входа
+@carmain.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code == status.HTTP_401_UNAUTHORIZED:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    return response
 
 
 # def custom_openapi():
