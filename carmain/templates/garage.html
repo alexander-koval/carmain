@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Мой гараж - Carmain
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Мой гараж</h2>
+            {% if user %}
+            <div class="user-info">
+                <span class="mr-3">{{ user.email }}</span>
+                <a href="/auth/logout" class="btn btn-sm btn-outline-secondary">Выйти</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <style>
+            /* Карточки автомобилей */
+            .car-card, .add-car-card {
+                border-top: 4px solid #ffe216;
+                transition: all 0.2s ease;
+                height: 100%;
+                min-height: 380px; /* Фиксированная минимальная высота для всех карточек */
+            }
+            .car-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+            .car-image-placeholder {
+                background-color: #f8f9fa;
+                height: 150px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1rem;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .car-model {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 1rem;
+                font-size: 1.35rem;
+            }
+            .car-info {
+                color: #666;
+                margin-bottom: 1.5rem;
+            }
+            .car-info-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px dashed #eee;
+            }
+            .car-info-label {
+                font-weight: 500;
+            }
+            
+            /* Кнопки */
+            .btn-carmain {
+                background-color: #ffe216;
+                border-color: #e6b800;
+                color: #333;
+                font-weight: 500;
+            }
+            .btn-carmain:hover {
+                background-color: #e6b800;
+                border-color: #cc9900;
+                color: #333;
+            }
+            
+            /* Пустой гараж */
+            .empty-garage {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                padding: 3rem;
+                text-align: center;
+            }
+            .empty-garage-icon {
+                font-size: 4rem;
+                color: #ffe216;
+                margin-bottom: 1.5rem;
+                opacity: 0.7;
+            }
+            
+            /* Карточка добавления */
+            .add-car-card {
+                border: 2px dashed #ffe216;
+                background-color: #fffceb;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .add-car-card:hover {
+                background-color: #fff8d6;
+                transform: translateY(-5px);
+            }
+            .add-car-icon {
+                font-size: 4.5rem;
+                color: #ffcc00;
+                margin-bottom: 1.5rem;
+            }
+            .add-car-text {
+                font-weight: 500;
+                color: #666;
+            }
+            
+            /* Карусель */
+            #garageCarousel {
+                margin-bottom: 3rem;
+            }
+            /* Зафиксируем высоту карусели для предотвращения прыжков */
+            #garageCarousel .carousel-inner {
+                min-height: 400px; /* Минимальная высота для внутреннего содержимого карусели */
+            }
+            
+            .carousel-control-prev, .carousel-control-next {
+                width: 7%;
+                opacity: 0.8;
+                background: rgba(255, 226, 22, 0.2);
+                height: 60px;
+                top: 50%;
+                transform: translateY(-50%);
+                border-radius: 30px;
+            }
+            .carousel-control-prev {
+                left: -10px;
+            }
+            .carousel-control-next {
+                right: -10px;
+            }
+            .carousel-control-prev-icon, .carousel-control-next-icon {
+                background-color: #ffcc00;
+                border-radius: 50%;
+                padding: 15px;
+                background-size: 50% 50%;
+            }
+            .carousel-indicators {
+                bottom: -50px;
+            }
+            .carousel-indicators button {
+                background-color: #ffcc00;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                margin: 0 5px;
+            }
+            .carousel-indicators .active {
+                background-color: #e6b800;
+            }
+            
+            /* Значки обслуживания */
+            .maintenance-badge {
+                display: inline-block;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+                border-radius: 30px;
+                margin-right: 0.5rem;
+            }
+            .badge-upcoming {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+            .badge-overdue {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            .badge-ok {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            
+            /* Иконки автомобилей */
+            .car-icon {
+                font-size: 72px;
+                color: #ffcc00;
+            }
+            
+            /* Модальное окно */
+            .modal-header {
+                background-color: #ffe216;
+                color: #333;
+            }
+            .modal-footer .btn-carmain {
+                background-color: #ffe216;
+                border-color: #e6b800;
+            }
+        </style>
+
+        {% if vehicles %}
+            <!-- Карусель с автомобилями -->
+            <div id="garageCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+                <!-- Индикаторы -->
+                <div class="carousel-indicators">
+                    {% for vehicle in vehicles %}
+                        <button type="button" data-target="#garageCarousel" data-slide-to="{{ loop.index0 }}" 
+                            {% if loop.first %}class="active" aria-current="true"{% endif %} 
+                            aria-label="Vehicle {{ loop.index }}"></button>
+                    {% endfor %}
+                    <button type="button" data-target="#garageCarousel" data-slide-to="{{ vehicles|length }}" 
+                        aria-label="Add Vehicle"></button>
+                </div>
+                
+                <div class="carousel-inner">
+                    <!-- Слайды с автомобилями -->
+                    {% for vehicle in vehicles %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <div class="row">
+                                <div class="col-md-8 mx-auto">
+                                    <div class="card car-card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="row" style="min-height: 380px;">
+                                                <div class="col-md-5">
+                                                    <div class="car-image-placeholder mb-4">
+                                                        <i class="fas fa-car car-icon"></i>
+                                                    </div>
+                                                    <div class="maintenance-status mb-3">
+                                                        <span class="maintenance-badge badge-upcoming">
+                                                            <i class="fas fa-exclamation-triangle mr-1"></i> Замена масла через 500 км
+                                                        </span>
+                                                    </div>
+                                                    <a href="/vehicles/{{ vehicle.id }}" class="btn btn-carmain btn-block">
+                                                        <i class="fas fa-wrench mr-2"></i> Обслуживание
+                                                    </a>
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <h3 class="car-model">{{ vehicle.brand }} {{ vehicle.model }}</h3>
+                                                    <div class="car-info">
+                                                        <div class="car-info-item">
+                                                            <span class="car-info-label">Год выпуска:</span>
+                                                            <span>{{ vehicle.year.strftime('%Y') }}</span>
+                                                        </div>
+                                                        <div class="car-info-item">
+                                                            <span class="car-info-label">Текущий пробег:</span>
+                                                            <span>{{ vehicle.odometer }} км</span>
+                                                        </div>
+                                                        <div class="car-info-item">
+                                                            <span class="car-info-label">Последнее ТО:</span>
+                                                            <span>01.03.2025</span>
+                                                        </div>
+                                                        <div class="car-info-item">
+                                                            <span class="car-info-label">Запланировано работ:</span>
+                                                            <span>2</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <button class="btn btn-outline-secondary btn-sm" hx-get="/vehicles/{{ vehicle.id }}/edit" hx-target="#addCarModalBody" data-toggle="modal" data-target="#addCarModal">
+                                                            <i class="fas fa-edit mr-1"></i> Редактировать
+                                                        </button>
+                                                        <button class="btn btn-outline-danger btn-sm" hx-get="/vehicles/{{ vehicle.id }}/delete" hx-target="#confirmDeleteModalBody" data-toggle="modal" data-target="#confirmDeleteModal">
+                                                            <i class="fas fa-trash-alt mr-1"></i> Удалить
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Слайд для добавления автомобиля -->
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-md-8 mx-auto">
+                                <div class="card add-car-card" data-toggle="modal" data-target="#addCarModal">
+                                    <div class="card-body d-flex flex-column justify-content-center align-items-center" style="min-height: 380px;">
+                                        <i class="fas fa-plus-circle add-car-icon"></i>
+                                        <h3 class="car-model">Добавить автомобиль</h3>
+                                        <p class="add-car-text">Нажмите, чтобы добавить новый автомобиль в ваш гараж</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Кнопки навигации карусели -->
+                <a class="carousel-control-prev" href="#garageCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Предыдущий</span>
+                </a>
+                <a class="carousel-control-next" href="#garageCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Следующий</span>
+                </a>
+            </div>
+            
+        {% else %}
+            <!-- Состояние пустого гаража -->
+            <div class="empty-garage">
+                <i class="fas fa-car empty-garage-icon"></i>
+                <h3>Ваш гараж пока пуст</h3>
+                <p class="lead text-muted">Добавьте свой первый автомобиль, чтобы начать отслеживать его обслуживание.</p>
+                <button class="btn btn-carmain btn-lg mt-3" data-toggle="modal" data-target="#addCarModal">
+                    <i class="fas fa-plus-circle mr-2"></i> Добавить автомобиль
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования автомобиля -->
+    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCarModalLabel">Добавить новый автомобиль</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="addCarModalBody">
+                    <form id="addVehicleForm" hx-post="/api/v1/vehicles/create" hx-swap="none" hx-on::after-request="location.reload()">
+                        <div class="form-group">
+                            <label for="brand">Марка</label>
+                            <input type="text" class="form-control" id="brand" name="brand" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="model">Модель</label>
+                            <input type="text" class="form-control" id="model" name="model" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Год выпуска</label>
+                            <input type="date" class="form-control" id="year" name="year" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="odometer">Текущий пробег (км)</label>
+                            <input type="number" class="form-control" id="odometer" name="odometer" required min="0">
+                        </div>
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-carmain">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="confirmDeleteModalBody">
+                    <p>Вы уверены, что хотите удалить этот автомобиль?</p>
+                    <p class="text-danger"><small>Это действие нельзя отменить.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Добавить Font Awesome если еще не добавлен
+    if (!document.querySelector('link[href*="font-awesome"]')) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+        document.head.appendChild(link);
+    }
+    
+    // Инициализация карусели, если необходимо
+    $(document).ready(function() {
+        $('#garageCarousel').carousel({
+            interval: false, // Отключаем автоматическую прокрутку
+            keyboard: true,  // Разрешаем управление клавиатурой
+            pause: 'hover'   // Пауза при наведении
+        });
+        
+        // Предотвращаем прыжки высоты при переключении слайдов
+        var maxHeight = 0;
+        $('.carousel-item').each(function(){
+            var itemHeight = $(this).height();
+            maxHeight = Math.max(maxHeight, itemHeight);
+        });
+        
+        if (maxHeight > 0) {
+            $('.carousel-inner').css('min-height', maxHeight + 'px');
+        }
+    });
+</script>
+{% endblock %}

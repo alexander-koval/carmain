@@ -64,7 +64,7 @@ async def index(
         vehicles = await vehicle_service.get_user_vehicles()
         return templates.TemplateResponse(
             request=request, 
-            name="index.html", 
+            name="garage.html", 
             context={"vehicles": vehicles, "user": user}
         )
     return RedirectResponse(url="/auth/login", status_code=302)
