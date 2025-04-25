@@ -321,8 +321,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="addCarModalBody">
-                    <form id="vehicleForm" hx-post="/api/v1/vehicles/create" hx-swap="none" hx-on::after-request="location.reload()" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
-                        <!-- Поле vehicle_id не нужно для создания -->
+                    <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML">
                         <div class="form-group">
                             <label for="brand">Марка</label>
                             <input type="text" class="form-control" id="brand" name="brand" required>
@@ -339,7 +338,6 @@
                             <label for="odometer">Текущий пробег (км)</label>
                             <input type="number" class="form-control" id="odometer" name="odometer" required min="0">
                         </div>
-                        <input type="hidden" name="user_id" value="{{ user.id }}">
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                             <button type="submit" class="btn btn-carmain">Сохранить</button>
@@ -361,7 +359,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editVehicleForm" hx-swap="none" hx-on::after-request="location.reload()" hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc">
+                    <form id="editVehicleForm" hx-target="body" hx-swap="outerHTML">
                         <input type="hidden" id="edit_vehicle_id" name="vehicle_id" value="">
                         
                         <div class="form-group">
@@ -379,7 +377,6 @@
                             <input type="number" class="form-control" id="edit_odometer" name="odometer" required min="0">
                         </div>
                         
-                        <input type="hidden" name="user_id" value="{{ user.id }}">
                         <input type="hidden" id="edit_brand" name="brand">
                         <input type="hidden" id="edit_model" name="model">
                         
@@ -432,9 +429,9 @@
         document.getElementById('edit_year').value = year;
         document.getElementById('edit_odometer').value = odometer;
         
-        // Устанавливаем атрибут PATCH для формы
+        // Настраиваем атрибут PATCH для формы через HTMX
         var form = document.getElementById('editVehicleForm');
-        form.setAttribute('hx-patch', '/api/v1/vehicles/' + id + '/update');
+        form.setAttribute('hx-patch', '/vehicles/' + id + '/update');
         console.log('Edit form configured with PATCH:', form.getAttribute('hx-patch'));
     }
     
