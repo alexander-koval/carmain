@@ -33,7 +33,7 @@ async def create(
     return await vehicle_service.add(vehicle)
 
 
-@vehicle_router.patch(path="/update", response_model=VehicleSchema)
+@vehicle_router.patch(path="/{obj_id}/update", response_model=VehicleSchema)
 async def update(
     obj_id: uuid.UUID,
     vehicle: VehicleUpdate,
