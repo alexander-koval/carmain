@@ -20,6 +20,17 @@ vehicle_router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 templates = Jinja2Templates(directory="carmain/templates")
 
 
+@vehicle_router.get("/", response_class=HTMLResponse)
+async def list_vehicles(
+    request: Request, vehicle_service: VehicleService = Depends()
+):
+    """Возвращает HTML-фрагмент со списком автомобилей пользователя"""
+    vehicles = await vehicle_service.get_user_vehicles()
+    return templates.TemplateResponse(
+        request=request, name="vehicle_list.html", context={"vehicles": vehicles}
+    )
+
+
 @vehicle_router.get(path="/{obj_id}", response_class=HTMLResponse)
 async def get(
     request: Request, obj_id: uuid.UUID, vehicle_service: VehicleService = Depends()
@@ -84,10 +95,15 @@ async def update(
             odometer=odometer
         )
         
-        await vehicle_service.patch(obj_id, vehicle_data)
+        # Обновляем данные автомобиля
+        updated_vehicle = await vehicle_service.patch(obj_id, vehicle_data)
         
-        # Возвращаем редирект для полного обновления страницы
-        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+        # Возвращаем только обновленную карточку автомобиля
+        return templates.TemplateResponse(
+            request=request,
+            name="vehicle_card.html",
+            context={"vehicle": updated_vehicle}
+        )
     except Exception as e:
         return templates.TemplateResponse(
             request=request,
