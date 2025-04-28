@@ -1,0 +1,51 @@
+<!-- Карточка автомобиля -->
+<div id="vehicle-card-{{ vehicle.id }}" class="card car-card shadow-sm">
+    <div class="card-body">
+        <div class="row" style="min-height: 380px;">
+            <div class="col-md-5">
+                <div class="car-image-placeholder mb-4">
+                    <i class="fas fa-car car-icon"></i>
+                </div>
+                <div class="maintenance-status mb-3">
+                    <span class="maintenance-badge badge-upcoming">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Замена масла через 500 км
+                    </span>
+                </div>
+                <a href="/vehicles/{{ vehicle.id }}" class="btn btn-carmain btn-block">
+                    <i class="fas fa-wrench mr-2"></i> Обслуживание
+                </a>
+            </div>
+            <div class="col-md-7">
+                <h3 class="car-model">{{ vehicle.brand }} {{ vehicle.model }}</h3>
+                <div class="car-info">
+                    <div class="car-info-item">
+                        <span class="car-info-label">Год выпуска:</span>
+                        <span>{{ vehicle.year.strftime('%Y') }}</span>
+                    </div>
+                    <div class="car-info-item">
+                        <span class="car-info-label">Текущий пробег:</span>
+                        <span>{{ vehicle.odometer }} км</span>
+                    </div>
+                    <div class="car-info-item">
+                        <span class="car-info-label">Последнее ТО:</span>
+                        <span>01.03.2025</span>
+                    </div>
+                    <div class="car-info-item">
+                        <span class="car-info-label">Запланировано работ:</span>
+                        <span>2</span>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-outline-secondary btn-sm" 
+                           onclick="editVehicle('{{ vehicle.id }}', '{{ vehicle.brand }}', '{{ vehicle.model }}', '{{ vehicle.year.strftime('%Y-%m-%d') }}', {{ vehicle.odometer }})"
+                           data-toggle="modal" data-target="#editCarModal">
+                        <i class="fas fa-edit mr-1"></i> Редактировать
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" hx-get="/vehicles/{{ vehicle.id }}/delete" hx-target="#confirmDeleteModalBody" data-toggle="modal" data-target="#confirmDeleteModal">
+                        <i class="fas fa-trash-alt mr-1"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
