@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" hx-boost="true">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +8,10 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
-    <!-- HTMX расширение для JSON -->
+    <!-- HTMX расширения -->
     <script src="https://unpkg.com/htmx.org@1.9.2/dist/ext/json-enc.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2/dist/ext/class-tools.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2/dist/ext/loading-states.js"></script>
     <style>
         .header {
             background-color: #ffe216;
@@ -43,6 +45,19 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <script>
+        // Инициализация HTMX расширений
+        document.addEventListener('DOMContentLoaded', function() {
+            // Расширение для классов (подсветка активных элементов и т.д.)
+            htmx.defineExtension('class-tools', window.htmx_class_tools);
+            
+            // Расширение для состояний загрузки (для показа спиннеров и т.д.)
+            htmx.defineExtension('loading-states', window.htmx_loading_states);
+            
+            console.log('HTMX extensions initialized');
+        });
+    </script>
     
     {% block scripts %}
     <!-- Additional scripts -->
