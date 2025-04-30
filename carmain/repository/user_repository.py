@@ -15,7 +15,7 @@ class UserRepository(BaseRepository):
         self,
         session: Annotated[AsyncSession, Depends(get_async_session)],
     ) -> None:
-        super().__init__(session)
+        super().__init__(User, session)
 
     async def get_by_email(self, user_info: SignIn) -> User:
         obj = await self.session.scalar(

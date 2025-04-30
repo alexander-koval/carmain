@@ -21,3 +21,11 @@ class VehicleRepository(BaseRepository[uuid.UUID, Vehicle]):
         query = select(self.model).where(self.model.user_id == user_id)
         result = await self.session.scalars(query)
         return result.all()
+        
+    async def get_user_vehicles(self, user_id: int) -> list[Vehicle]:
+        """Получить все автомобили пользователя (алиас для get_by_user_id)"""
+        return await self.get_by_user_id(user_id)
+        
+    async def get_vehicle(self, vehicle_id: uuid.UUID) -> Vehicle:
+        """Получить автомобиль по ID"""
+        return await self.get_by_id(vehicle_id)

@@ -9,7 +9,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update, insert, delete  # noqa
 from carmain.core.config import get_settings
-from carmain.models.users import User
+from carmain.models.auth import *
+from carmain.models.users import *
+from carmain.models.items import *
+from carmain.models.vehicles import *
+from carmain.models.records import *
 
 settings = get_settings()
 # print(settings)
@@ -39,8 +43,9 @@ embed(colors="neutral", banner2=banner)
 
 
 # Example
-# from carmain.models.users import User
-# with Session() as session:
-#     result = session.scalars(select(User).where(Review.is_active == True))
-#     for user in result.all():
-#        print(user)
+from carmain.models.users import User
+
+with Session() as session:
+    result = session.scalars(select(User))
+    for user in result.all():
+        print(user)
