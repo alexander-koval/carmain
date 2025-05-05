@@ -28,13 +28,13 @@ class MaintenanceRepository(BaseRepository):
         """Получить список всех типов обслуживания"""
         query = select(MaintenanceItem).offset(skip).limit(limit)
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     async def get_maintenance_item(self, item_id: int) -> Optional[MaintenanceItem]:
         """Получить информацию о типе обслуживания по ID"""
         query = select(MaintenanceItem).where(MaintenanceItem.id == item_id)
         result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+        return result.unique().scalar_one_or_none()
 
     async def create_maintenance_item(self, item: dict) -> MaintenanceItem:
         """Создать новый тип обслуживания"""
@@ -142,7 +142,7 @@ class MaintenanceRepository(BaseRepository):
             .order_by(ServiceRecord.service_date.desc())
         )
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     async def create_service_record(self, record_data: dict) -> ServiceRecord:
         """Создать запись об обслуживании"""

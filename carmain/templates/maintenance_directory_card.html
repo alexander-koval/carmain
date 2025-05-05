@@ -1,0 +1,43 @@
+<!-- Partial: single maintenance item card -->
+<div class="col-12 col-md-6 col-lg-4 mb-4">
+  <div class="card maintenance-card h-100" data-item-id="{{ item.id }}">
+    <div class="card-body d-flex flex-column">
+      <div class="d-flex align-items-start mb-3">
+        <i class="fas fa-{{ item.icon }} fa-2x text-secondary mr-3 mt-1"></i>
+        <div class="flex-grow-1">
+          <h5 class="card-title mb-1">{{ item.name }}</h5>
+          <p class="card-text small mb-2"><strong>Интервал:</strong> {{ item.default_interval }} км</p>
+        </div>
+      </div>
+      <div class="mt-auto d-flex justify-content-between align-items-center">
+        {% if item.is_tracked %}
+        <div class="status-indicator tracked">
+          <i class="fas fa-check-circle mr-1"></i> Отслеживается
+        </div>
+        <button class="btn btn-sm btn-outline-secondary btn-untrack"
+                hx-post="/vehicles/{{ vehicle_id }}/maintenance-items/{{ item.id }}/untrack"
+                hx-target="closest .col-12"
+                hx-swap="outerHTML"
+                hx-indicator="#spinner-{{ item.id }}">
+          Убрать
+          <span id="spinner-{{ item.id }}" class="spinner-border spinner-border-sm htmx-indicator ml-1"
+                role="status" style="display:none;"></span>
+        </button>
+        {% else %}
+        <div class="status-indicator not-tracked">
+          <i class="fas fa-times-circle mr-1"></i> Не отслеживается
+        </div>
+        <button class="btn btn-sm btn-carmain btn-track"
+                hx-post="/vehicles/{{ vehicle_id }}/maintenance-items/{{ item.id }}/track"
+                hx-target="closest .col-12"
+                hx-swap="outerHTML"
+                hx-indicator="#spinner-{{ item.id }}">
+          Добавить
+          <span id="spinner-{{ item.id }}" class="spinner-border spinner-border-sm htmx-indicator ml-1"
+                role="status" style="display:none;"></span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

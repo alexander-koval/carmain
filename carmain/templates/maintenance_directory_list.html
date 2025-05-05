@@ -1,0 +1,9 @@
+<!-- Partial: list of maintenance item cards -->
+{% for item in maintenance_items %}
+  {% include "maintenance_directory_card.html" %}
+{% endfor %}
+{% if maintenance_items|length == 0 %}
+<div id="noResultsMessage" class="col-12 text-center text-muted">
+  <p>По вашему запросу ничего не найдено.</p>
+</div>
+{% endif %}

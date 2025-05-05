@@ -1,0 +1,61 @@
+/* maintenance-directory.css */
+/* Стили для карточек справочника работ */
+.maintenance-card {
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.maintenance-card:hover,
+.maintenance-card:focus-within {
+    border-color: #ffe216;
+    box-shadow: 0 0 0 0.2rem rgba(255, 226, 22, 0.3);
+}
+
+/* Статус отслеживания */
+.status-indicator {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+.status-indicator.tracked {
+    color: #28a745;
+}
+.status-indicator.not-tracked {
+    color: #6c757d;
+}
+.status-indicator i {
+    font-size: 1rem;
+    margin-right: 0.3rem;
+}
+
+/* Акцентная кнопка Carmain */
+.btn-carmain {
+    background-color: #ffe216;
+    border: 1px solid #6c757d;
+    color: #343a40;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.btn-carmain:hover,
+.btn-carmain:focus {
+    background-color: #edd814;
+    border-color: #5a6268;
+    color: #212529;
+}
+
+/* Кнопка Убрать (outline-secondary) можно кастомизировать при необходимости */
+.btn-untrack {
+    /* По умолчанию можно использовать btn-outline-secondary */
+}
+
+/* Состояние disabled для кнопок */
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Индикаторы HTMX (спиннеры в кнопках) */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
