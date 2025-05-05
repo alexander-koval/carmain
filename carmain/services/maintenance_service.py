@@ -61,16 +61,16 @@ class MaintenanceService(BaseService):
         """Создать элемент обслуживания для пользователя"""
         return await self.maintenance_repo.create_user_maintenance_item(self.user.id, item_data)
     
-    async def update_user_maintenance_item(self, item_id: int, 
+    async def update_user_maintenance_item(self, item_id: uuid.UUID,
                                           update_data: Dict[str, Any]) -> Optional[UserMaintenanceItem]:
         """Обновить элемент обслуживания пользователя"""
         return await self.maintenance_repo.update_user_maintenance_item(item_id, update_data)
     
-    async def delete_user_maintenance_item(self, item_id: int) -> bool:
+    async def delete_user_maintenance_item(self, item_id: uuid.UUID) -> bool:
         """Удалить элемент обслуживания пользователя"""
         return await self.maintenance_repo.delete_user_maintenance_item(item_id)
     
-    async def get_service_records(self, user_item_id: int) -> List[ServiceRecord]:
+    async def get_service_records(self, user_item_id: uuid.UUID) -> List[ServiceRecord]:
         """Получить историю обслуживания для конкретного элемента"""
         return await self.maintenance_repo.get_service_records(user_item_id)
     

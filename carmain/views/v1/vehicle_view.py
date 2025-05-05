@@ -20,7 +20,7 @@ vehicle_router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 templates = Jinja2Templates(directory="carmain/templates")
 
 
-@vehicle_router.get("/", response_class=HTMLResponse)
+@vehicle_router.get("/")
 async def list_vehicles(
     request: Request, vehicle_service: VehicleService = Depends()
 ):
@@ -31,7 +31,7 @@ async def list_vehicles(
     )
 
 
-@vehicle_router.get(path="/{obj_id}", response_class=HTMLResponse)
+@vehicle_router.get(path="/{obj_id}")
 async def get(
     request: Request, obj_id: uuid.UUID, vehicle_service: VehicleService = Depends()
 ):
@@ -42,7 +42,7 @@ async def get(
     )
 
 
-@vehicle_router.post(path="/create", response_class=HTMLResponse)
+@vehicle_router.post(path="/create")
 async def create(
     request: Request,
     brand: str = Form(...),
@@ -75,7 +75,7 @@ async def create(
         )
 
 
-@vehicle_router.patch(path="/{obj_id}/update", response_class=HTMLResponse)
+@vehicle_router.patch(path="/{obj_id}/update")
 async def update(
     request: Request,
     obj_id: uuid.UUID,

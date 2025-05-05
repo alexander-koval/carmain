@@ -29,8 +29,8 @@ templates = Jinja2Templates(directory="carmain/templates")
 # Используем инъекцию зависимостей напрямую через MaintenanceService
 
 
-@router.get("/{vehicle_id}/maintenance", response_class=HTMLResponse)
-async def get_maintenance_items_view(
+@router.get("/{vehicle_id}/maintenance")
+async def maintenance_items_view(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
     maintenance_service: Annotated[MaintenanceService, Depends()],
@@ -93,8 +93,8 @@ async def get_maintenance_items_view(
     )
 
 
-@router.get("/{vehicle_id}/all-maintenance-items", response_class=HTMLResponse)
-async def get_all_maintenance_items_view(
+@router.get("/{vehicle_id}/all-maintenance-items")
+async def all_maintenance_items_view(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
     maintenance_service: Annotated[MaintenanceService, Depends()],
@@ -162,7 +162,7 @@ async def get_all_maintenance_items_view(
 
 
 @router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/track", response_class=HTMLResponse
+    "/{vehicle_id}/maintenance-items/{item_id}/track"
 )
 async def track_maintenance_item(
     request: Request,
@@ -213,7 +213,7 @@ async def track_maintenance_item(
 
 
 @router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/untrack", response_class=HTMLResponse
+    "/{vehicle_id}/maintenance-items/{item_id}/untrack"
 )
 async def untrack_maintenance_item(
     request: Request,
@@ -263,7 +263,7 @@ async def untrack_maintenance_item(
 
 
 @router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/service", response_class=HTMLResponse
+    "/{vehicle_id}/maintenance-items/{item_id}/service"
 )
 async def mark_item_as_serviced(
     request: Request,
@@ -327,7 +327,7 @@ async def mark_item_as_serviced(
     )
 
 
-@router.get("/{vehicle_id}/add-maintenance-item", response_class=HTMLResponse)
+@router.get("/{vehicle_id}/add-maintenance-item")
 async def add_maintenance_item_view(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
