@@ -115,7 +115,7 @@ async def all_maintenance_items_view(
     all_items = await maintenance_service.get_maintenance_items(skip=0, limit=1000)
     # Получаем отмеченные пользователем для данного автомобиля
     user_items = await maintenance_service.get_user_maintenance_items(
-        vehicle_id=vehicle_id
+        vehicle_id=vehicle_id, limit=1000
     )
     tracked_ids = {ui.item_id for ui in user_items}
 
@@ -154,10 +154,10 @@ async def all_maintenance_items_view(
         )
 
     # Проверяем HTMX запрос
-    # is_htmx = request.headers.get("HX-Request") == "true"
+    is_htmx = request.headers.get("HX-Request") == "true"
     context = {"request": request, "vehicle_id": vehicle_id, "maintenance_items": items}
-    # if is_htmx:
-    #     return templates.TemplateResponse("maintenance_directory_list.html", context)
+    if is_htmx:
+        return templates.TemplateResponse("maintenance_directory_list.html", context)
     return templates.TemplateResponse("maintenance_directory.html", context)
 
 
@@ -213,7 +213,7 @@ async def track_maintenance_item(
 
 
 @router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/untrack"
+    "/{vehicle_id}/maintenance-items/{item_id}/untrack", response_class=HTMLResponse
 )
 async def untrack_maintenance_item(
     request: Request,
