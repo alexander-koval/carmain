@@ -44,3 +44,4 @@ class UserMaintenanceItem(Base):
     maintenance_item: Mapped[MaintenanceItem] = relationship(
         back_populates="user_maintenance_items"
     )
+    eagers = ["maintenance_item"]

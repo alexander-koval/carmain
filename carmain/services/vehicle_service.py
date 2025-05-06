@@ -1,5 +1,5 @@
 import uuid
-from typing import Annotated
+from typing import Annotated, Any, Coroutine, Sequence
 
 from fastapi import Depends
 
@@ -39,9 +39,9 @@ class VehicleService(BaseService[uuid.UUID, VehicleSchema, Vehicle]):
     async def remove_by_id(self, obj_id: uuid.UUID) -> Vehicle:
         return await self.repository.delete_by_id(obj_id)
 
-    async def all(self) -> list[Vehicle]:
+    async def all(self) -> Sequence[Vehicle]:
         return await self.repository.all()
-        
+
     async def get_user_vehicles(self) -> list[Vehicle]:
         """Get all vehicles belonging to the current user"""
         return await self.repository.get_by_user_id(self.user.id)

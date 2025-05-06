@@ -1,4 +1,4 @@
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, Sequence
 
 from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
@@ -22,4 +22,4 @@ class BaseService(Protocol[K, S, M]):
 
     async def remove_by_id(self, obj_id: K) -> M: ...
 
-    async def all(self) -> list[M]: ...
+    async def all(self) -> Sequence[M]: ...

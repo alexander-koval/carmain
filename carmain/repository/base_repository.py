@@ -1,6 +1,6 @@
-from typing import Annotated
+from typing import Annotated, Any, Coroutine, Sequence
 from fastapi import Depends
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, update, insert, delete, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -32,14 +32,15 @@ class BaseRepository(Repository[K, M]):
             raise NotFoundError(detail=f"not found id : {obj_id}")
         return result
 
-    async def all(self) -> list[M]:
-        return await self.session.scalars(select(self.model))
+    async def all(self) -> Sequence[M]:
+        result = await self.session.scalars(select(self.model))
+        return result.all()
 
     async def create(self, obj: M) -> M:
         try:
             self.session.add(obj)
             await self.session.commit()
-            # await session.refresh(query)
+            await self.session.refresh(obj)
         except IntegrityError as e:
             raise DuplicatedError(detail=str(e.orig))
         return obj

@@ -134,7 +134,7 @@ async def all_maintenance_items_view(
         if "масл" in name_lower or "oil" in name_lower:
             icon = "oil-can"
         elif "тормоз" in name_lower or "brake" in name_lower:
-            icon = "brake-system"
+            icon = "exclamation-circle"
         elif "ремень" in name_lower or "грм" in name_lower:
             icon = "cogs"
         elif "фильтр" in name_lower or "filter" in name_lower:
@@ -161,9 +161,7 @@ async def all_maintenance_items_view(
     return templates.TemplateResponse("maintenance_directory.html", context)
 
 
-@router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/track"
-)
+@router.post("/{vehicle_id}/maintenance-items/{item_id}/track")
 async def track_maintenance_item(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
@@ -190,7 +188,7 @@ async def track_maintenance_item(
     if "масл" in name_lower or "oil" in name_lower:
         icon = "oil-can"
     elif "тормоз" in name_lower or "brake" in name_lower:
-        icon = "brake-system"
+        icon = "exclamation-circle"
     elif "ремень" in name_lower or "грм" in name_lower:
         icon = "cogs"
     elif "фильтр" in name_lower or "filter" in name_lower:
@@ -240,7 +238,7 @@ async def untrack_maintenance_item(
     if "масл" in name_lower or "oil" in name_lower:
         icon = "oil-can"
     elif "тормоз" in name_lower or "brake" in name_lower:
-        icon = "brake-system"
+        icon = "exclamation-circle"
     elif "ремень" in name_lower or "грм" in name_lower:
         icon = "cogs"
     elif "фильтр" in name_lower or "filter" in name_lower:
@@ -262,9 +260,7 @@ async def untrack_maintenance_item(
     )
 
 
-@router.post(
-    "/{vehicle_id}/maintenance-items/{item_id}/service"
-)
+@router.post("/{vehicle_id}/maintenance-items/{item_id}/service")
 async def mark_item_as_serviced(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],

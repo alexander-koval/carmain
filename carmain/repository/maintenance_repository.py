@@ -1,6 +1,7 @@
 import uuid
+from collections.abc import Sequence
 from datetime import date
-from typing import List, Optional, Tuple, Annotated
+from typing import List, Optional, Tuple, Annotated, Any, Coroutine, Sequence
 
 from fastapi import Depends
 from sqlalchemy import select, func, and_, or_
@@ -8,10 +9,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from carmain.core.database import get_async_session
+from carmain.core.exceptions import NotFoundError
 from carmain.models.items import MaintenanceItem, UserMaintenanceItem
 from carmain.models.records import ServiceRecord
 from carmain.models.vehicles import Vehicle
 from carmain.repository.base_repository import BaseRepository
+
+
+class UserMaintenanceRepository(BaseRepository):
+    def __init__(self, session: Annotated[AsyncSession, Depends(get_async_session)]):
+        super().__init__(UserMaintenanceItem, session)
+
+    async def get_by_vehicle(
+        self, vehicle_id: uuid.UUID, skip: int = 0, limit: int = 10, eager=False
+    ) -> Sequence[UserMaintenanceItem]:
+        query = select(self.model).where(UserMaintenanceItem.vehicle_id == vehicle_id)
+        if eager:
+            for eager in getattr(self.model, "eagers", []):
+                query = query.options(joinedload(getattr(self.model, eager)))
+        query = query.offset(skip).limit(limit)
+        result = await self.session.scalars(query)
+        if not result:
+            raise NotFoundError(detail=f"not found for vehicle_id : {vehicle_id}")
+        return result.unique().all()
 
 
 class MaintenanceRepository(BaseRepository):
@@ -24,13 +44,15 @@ class MaintenanceRepository(BaseRepository):
 
     async def get_maintenance_items(
         self, skip: int = 0, limit: int = 10
-    ) -> List[MaintenanceItem]:
+    ) -> Sequence[MaintenanceItem]:
         """Получить список всех типов обслуживания"""
         query = select(MaintenanceItem).offset(skip).limit(limit)
         result = await self.session.execute(query)
         return result.scalars().unique().all()
 
-    async def get_maintenance_item(self, item_id: int) -> Optional[MaintenanceItem]:
+    async def get_maintenance_item(
+        self, item_id: uuid.UUID
+    ) -> Optional[MaintenanceItem]:
         """Получить информацию о типе обслуживания по ID"""
         query = select(MaintenanceItem).where(MaintenanceItem.id == item_id)
         result = await self.session.execute(query)
@@ -91,7 +113,7 @@ class MaintenanceRepository(BaseRepository):
         )
         result = await self.session.execute(query)
         # scalar_one_or_none не требует unique() так как возвращает один объект
-        return result.scalar_one_or_none()
+        return result.unique().scalar_one_or_none()
 
     async def create_user_maintenance_item(
         self, user_id: int, item_data: dict
