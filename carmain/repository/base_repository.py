@@ -1,4 +1,5 @@
-from typing import Annotated, Any, Coroutine, Sequence
+from typing import Annotated
+from collections.abc import Sequence
 from fastapi import Depends
 from sqlalchemy import select, update, insert, delete, Row, RowMapping
 from sqlalchemy.exc import IntegrityError

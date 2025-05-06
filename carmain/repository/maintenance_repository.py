@@ -1,8 +1,7 @@
 import uuid
-from collections.abc import Sequence
 from datetime import date
-from typing import List, Optional, Tuple, Annotated, Any, Coroutine, Sequence
-
+from typing import List, Optional, Tuple, Annotated
+from collections.abc import Sequence
 from fastapi import Depends
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,5 +1,5 @@
-from typing import Protocol, TypeVar, Sequence
-
+from typing import Protocol, TypeVar
+from collections.abc import Sequence
 from carmain.models.users import User
 from carmain.repository.base_repository import BaseRepository
 

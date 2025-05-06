@@ -1,6 +1,6 @@
 import uuid
-from typing import Annotated, Any, Coroutine, Sequence
-
+from typing import Annotated
+from collections.abc import Sequence
 from fastapi import Depends
 
 from carmain.models.users import User
