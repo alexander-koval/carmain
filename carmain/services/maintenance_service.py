@@ -3,6 +3,8 @@ from datetime import date, datetime
 from typing import List, Optional, Dict, Any, Tuple, Annotated, Sequence, Coroutine
 
 from fastapi import Depends
+from pydantic import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
 
 from carmain.models.items import MaintenanceItem, UserMaintenanceItem
 from carmain.models.records import ServiceRecord
@@ -12,6 +14,7 @@ from carmain.repository.maintenance_repository import (
     MaintenanceRepository,
     UserMaintenanceRepository,
 )
+from carmain.repository.record_repository import ServiceRecordRepository
 from carmain.repository.vehicle_repository import VehicleRepository
 from carmain.schemas.maintenance_schema import (
     MaintenanceItemStatus,
@@ -30,83 +33,87 @@ class MaintenanceService(BaseService):
         maintenance_repo: Annotated[MaintenanceRepository, Depends()],
         user_maintenance_repo: Annotated[UserMaintenanceRepository, Depends()],
         vehicle_repo: Annotated[VehicleRepository, Depends()],
+        record_repo: Annotated[ServiceRecordRepository, Depends()],
         user: Annotated[User, Depends(current_active_verified_user)],
     ):
-        self.maintenance_repo = maintenance_repo
-        self.user_maintenance_repo = user_maintenance_repo
-        self.vehicle_repo = vehicle_repo
+        self.maintenance_repository = maintenance_repo
+        self.user_maintenance_repository = user_maintenance_repo
+        self.vehicle_repository = vehicle_repo
+        self.record_repository = record_repo
         self.user = user
 
     async def get_maintenance_items(
         self, skip: int = 0, limit: int = 10
     ) -> Sequence[MaintenanceItem]:
         """Получить список всех типов обслуживания"""
-        return await self.maintenance_repo.get_maintenance_items(skip, limit)
+        return await self.maintenance_repository.get_maintenance_items(skip, limit)
 
     async def get_maintenance_item(
         self, item_id: uuid.UUID
     ) -> Optional[MaintenanceItem]:
         """Получить информацию о типе обслуживания по ID"""
-        return await self.maintenance_repo.get_maintenance_item(item_id)
+        return await self.maintenance_repository.get_maintenance_item(item_id)
 
     async def create_maintenance_item(
         self, item_data: Dict[str, Any]
     ) -> MaintenanceItem:
         """Создать новый тип обслуживания"""
-        return await self.maintenance_repo.create_maintenance_item(item_data)
+        db_item = MaintenanceItem(user_id=self.user.id, **item_data)
+        return await self.maintenance_repository.create(db_item)
 
     async def get_user_vehicles(self) -> List[Vehicle]:
         """Получить все автомобили пользователя"""
-        return await self.vehicle_repo.get_user_vehicles(self.user.id)
+        return await self.vehicle_repository.get_user_vehicles(self.user.id)
 
     async def get_vehicle(self, vehicle_id: uuid.UUID) -> Optional[Vehicle]:
         """Получить автомобиль по ID"""
-        return await self.vehicle_repo.get_vehicle(vehicle_id)
+        return await self.vehicle_repository.get_vehicle(vehicle_id)
 
     async def get_user_maintenance_items(
         self, vehicle_id: Optional[uuid.UUID] = None, skip: int = 0, limit: int = 10
     ) -> Sequence[UserMaintenanceItem]:
         """Получить список элементов обслуживания пользователя"""
-        return await self.user_maintenance_repo.get_by_vehicle(
+        return await self.user_maintenance_repository.get_by_vehicle(
             vehicle_id, skip, limit, eager=True
         )
-        # return await self.maintenance_repo.get_user_maintenance_items(
-        #     self.user.id, vehicle_id, skip, limit
-        # )
 
     async def get_user_maintenance_item(
         self, item_id: uuid.UUID
     ) -> Optional[UserMaintenanceItem]:
         """Получить элемент обслуживания пользователя по ID"""
-        # return await self.maintenance_repo.get_user_maintenance_item(item_id)
-        return await self.user_maintenance_repo.get_by_id(item_id, eager=True)
+        return await self.user_maintenance_repository.get_by_id(item_id, eager=True)
 
     async def create_user_maintenance_item(
         self, item_data: Dict[str, Any]
     ) -> UserMaintenanceItem:
         """Создать элемент обслуживания для пользователя"""
         db_item = UserMaintenanceItem(user_id=self.user.id, **item_data)
-        return await self.user_maintenance_repo.create(db_item)
+        return await self.user_maintenance_repository.create(db_item)
 
     async def update_user_maintenance_item(
-        self, item_id: uuid.UUID, update_data: Dict[str, Any]
+        self, item_id: uuid.UUID, update_data: BaseModel
     ) -> Optional[UserMaintenanceItem]:
         """Обновить элемент обслуживания пользователя"""
-        return await self.maintenance_repo.update_user_maintenance_item(
-            item_id, update_data
-        )
+        return await self.user_maintenance_repository.update_by_id(item_id, update_data)
 
     async def delete_user_maintenance_item(self, item_id: uuid.UUID) -> bool:
         """Удалить элемент обслуживания пользователя"""
-        return await self.maintenance_repo.delete_user_maintenance_item(item_id)
+        try:
+            return await self.user_maintenance_repository.delete_by_id(item_id)
+        except SQLAlchemyError:
+            return False
 
-    async def get_service_records(self, user_item_id: uuid.UUID) -> List[ServiceRecord]:
+    async def get_service_records(
+        self, user_item_id: uuid.UUID
+    ) -> Sequence[ServiceRecord]:
         """Получить историю обслуживания для конкретного элемента"""
-        return await self.maintenance_repo.get_service_records(user_item_id)
+        return await self.record_repository.get_by_user_item_id(user_item_id)
 
-    async def create_service_record(self, record_data: Dict[str, Any]) -> ServiceRecord:
+    async def create_service_record(self, record: BaseModel) -> ServiceRecord:
         """Создать запись об обслуживании"""
-        return await self.maintenance_repo.create_service_record(record_data)
+        record_data = record.model_dump(exclude_unset=True)
+        db_item = ServiceRecord(**record_data)
+        return await self.record_repository.create(db_item)
 
     async def mark_item_as_serviced(
         self,
@@ -116,13 +123,13 @@ class MaintenanceService(BaseService):
     ) -> Optional[ServiceRecord]:
         """Отметить элемент как обслуженный"""
         # Проверяем, что элемент принадлежит пользователю
-        item = await self.maintenance_repo.get_user_maintenance_item(item_id)
+        item = await self.maintenance_repository.get_user_maintenance_item(item_id)
         if not item or item.user_id != self.user.id:
             return None
 
         # Если не передан пробег, получаем текущий пробег автомобиля
         if service_odometer is None:
-            vehicle = await self.vehicle_repo.get_vehicle(item.vehicle_id)
+            vehicle = await self.vehicle_repository.get_vehicle(item.vehicle_id)
             if vehicle:
                 service_odometer = vehicle.odometer
 
@@ -134,7 +141,7 @@ class MaintenanceService(BaseService):
             "comment": f"Обслуживание выполнено {service_date.strftime('%d.%m.%Y')}",
         }
 
-        return await self.maintenance_repo.create_service_record(record_data)
+        return await self.maintenance_repository.create_service_record(record_data)
 
     async def get_items_requiring_service(
         self, vehicle_id: uuid.UUID, page: int = 1, page_size: int = 10
@@ -149,13 +156,13 @@ class MaintenanceService(BaseService):
 
         # Получаем элементы, требующие обслуживания
         items, total_count = (
-            await self.maintenance_repo.get_maintenance_items_requiring_service(
+            await self.maintenance_repository.get_maintenance_items_requiring_service(
                 self.user.id, vehicle_id, skip, limit
             )
         )
 
         # Получаем информацию о текущем пробеге автомобиля
-        vehicle = await self.vehicle_repo.get_vehicle(vehicle_id)
+        vehicle = await self.vehicle_repository.get_vehicle(vehicle_id)
         if not vehicle:
             return [], {
                 "current_page": page,

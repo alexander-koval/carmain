@@ -1,6 +1,7 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from collections.abc import Sequence
 from fastapi import Depends
+from pydantic import BaseModel
 from sqlalchemy import select, update, insert, delete, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,29 +44,35 @@ class BaseRepository(Repository[K, M]):
             await self.session.commit()
             await self.session.refresh(obj)
         except IntegrityError as e:
+            await self.session.rollback()
             raise DuplicatedError(detail=str(e.orig))
         return obj
 
-    async def update_by_id(self, obj_id: K, obj: M) -> M:
-        obj.id = obj_id
-        # await self.session.execute(
-        #     update(self.model)
-        #     .where(self.model.id == obj_id)
-        #     .values(
-        #         schema.model_dump(
-        #             exclude_none=True, exclude_unset=True, exclude_defaults=True
-        #         )
-        #     )
-        # )
-        await self.session.merge(obj)
-        await self.session.commit()
-        return await self.get_by_id(obj_id)
+    async def update_by_id(self, obj_id: K, update_data: BaseModel) -> M:
+        db_obj = await self.session.get(self.model, obj_id)
+        if not db_obj:
+            raise NotFoundError(detail=f"not found id : {obj_id}")
+
+        update_payload_dict = update_data.model_dump(exclude_unset=True)
+        for key, value in update_payload_dict.items():
+            setattr(db_obj, key, value)
+
+        try:
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+        except Exception:
+            await self.session.rollback()
+            raise
+        return db_obj
 
     async def delete_by_id(self, obj_id: K) -> M:
-        # obj = await self.session.get(obj_id)
-        obj = await self.session.scalar(
-            select(self.model).where(self.model.id == obj_id)
-        )
-        await self.session.delete(obj)
-        await self.session.commit()
-        return obj
+        db_obj = await self.session.get(self.model, obj_id)
+        if not db_obj:
+            raise NotFoundError(detail=f"not found id: {obj_id}")
+        try:
+            await self.session.delete(db_obj)
+            await self.session.commit()
+        except Exception:
+            await self.session.rollback()
+            raise
+        return db_obj

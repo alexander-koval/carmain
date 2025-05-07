@@ -20,7 +20,7 @@ class UserMaintenanceRepository(BaseRepository):
         super().__init__(UserMaintenanceItem, session)
 
     async def get_by_vehicle(
-        self, vehicle_id: uuid.UUID, skip: int = 0, limit: int = 10, eager=False
+        self, vehicle_id: uuid.UUID, skip=0, limit=10, eager=False
     ) -> Sequence[UserMaintenanceItem]:
         query = select(self.model).where(UserMaintenanceItem.vehicle_id == vehicle_id)
         if eager:
@@ -56,14 +56,6 @@ class MaintenanceRepository(BaseRepository):
         query = select(MaintenanceItem).where(MaintenanceItem.id == item_id)
         result = await self.session.execute(query)
         return result.unique().scalar_one_or_none()
-
-    async def create_maintenance_item(self, item: dict) -> MaintenanceItem:
-        """Создать новый тип обслуживания"""
-        db_item = MaintenanceItem(**item)
-        self.session.add(db_item)
-        await self.session.commit()
-        await self.session.refresh(db_item)
-        return db_item
 
     async def get_user_maintenance_items(
         self,
@@ -113,34 +105,6 @@ class MaintenanceRepository(BaseRepository):
         result = await self.session.execute(query)
         # scalar_one_or_none не требует unique() так как возвращает один объект
         return result.unique().scalar_one_or_none()
-
-    async def create_user_maintenance_item(
-        self, user_id: int, item_data: dict
-    ) -> UserMaintenanceItem:
-        """Создать элемент обслуживания для пользователя"""
-        db_item = UserMaintenanceItem(user_id=user_id, **item_data)
-        self.session.add(db_item)
-        await self.session.commit()
-        await self.session.refresh(db_item)
-        return db_item
-
-    async def update_user_maintenance_item(
-        self, item_id: uuid.UUID, update_data: dict
-    ) -> Optional[UserMaintenanceItem]:
-        """Обновить элемент обслуживания пользователя"""
-        query = select(UserMaintenanceItem).where(UserMaintenanceItem.id == item_id)
-        result = await self.session.execute(query)
-        db_item = result.scalar_one_or_none()
-
-        if db_item:
-            for key, value in update_data.items():
-                if hasattr(db_item, key) and value is not None:
-                    setattr(db_item, key, value)
-
-            await self.session.commit()
-            await self.session.refresh(db_item)
-
-        return db_item
 
     async def delete_user_maintenance_item(self, item_id: uuid.UUID) -> bool:
         """Удалить элемент обслуживания пользователя"""

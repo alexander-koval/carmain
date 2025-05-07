@@ -1,4 +1,4 @@
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, Optional
 
 # Type definition for model
 M = TypeVar("M")
