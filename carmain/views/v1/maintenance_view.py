@@ -1,10 +1,22 @@
+import json
 from datetime import date
 import uuid
 from typing import Optional, List, Dict, Any, Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, Path
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Request,
+    Query,
+    Path,
+    Form,
+    File,
+    UploadFile,
+)
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from markupsafe import Markup
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from carmain.core.database import get_async_session
@@ -25,6 +37,14 @@ router = APIRouter(prefix="/vehicles", tags=["maintenance"])
 # Настройка шаблонизатора
 templates = Jinja2Templates(directory="carmain/templates")
 
+
+def to_json_filter(value):
+    if isinstance(value, uuid.UUID):
+        return Markup(json.dumps(str(value)))
+    return Markup(json.dumps(value))
+
+
+templates.env.filters["tojson"] = to_json_filter
 
 # Используем инъекцию зависимостей напрямую через MaintenanceService
 
@@ -76,6 +96,7 @@ async def maintenance_items_view(
                 "vehicle": vehicle,
                 "maintenance_items": maintenance_items,
                 "pagination": pagination_params,
+                "today": date.today().isoformat(),
             },
         )
 
@@ -89,6 +110,7 @@ async def maintenance_items_view(
             "user_vehicles": user_vehicles,
             "maintenance_items": maintenance_items,
             "pagination": pagination_params,
+            "today": date.today().isoformat(),
         },
     )
 
@@ -268,6 +290,10 @@ async def mark_item_as_serviced(
         uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
     ],
     maintenance_service: Annotated[MaintenanceService, Depends()],
+    service_date: Optional[str] = Form(None),
+    service_odometer: Optional[int] = Form(None),
+    service_comment: Optional[str] = Form(None),
+    service_photo: Optional[UploadFile] = File(None),
 ):
     """
     Отметить деталь как обслуженную
@@ -281,19 +307,36 @@ async def mark_item_as_serviced(
     ):
         raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
 
-    # Создаем запись об обслуживании
-    today = date.today()
+    # Обрабатываем дату обслуживания
+    service_date_obj = None
+    if service_date:
+        try:
+            service_date_obj = date.fromisoformat(service_date)
+        except ValueError:
+            service_date_obj = date.today()
+    else:
+        service_date_obj = date.today()
 
-    # Получаем текущий пробег автомобиля
-    vehicle = await maintenance_service.get_vehicle(vehicle_id)
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    # Получаем текущий пробег автомобиля если не указан другой
+    if not service_odometer:
+        vehicle = await maintenance_service.get_vehicle(vehicle_id)
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Автомобиль не найден")
+        service_odometer = vehicle.odometer
+
+    photo_path = None
+    if service_photo:
+        try:
+            pass
+        except Exception as e:
+            pass
 
     # Отмечаем деталь как обслуженную
     await maintenance_service.mark_item_as_serviced(
         item_id=item_id,
-        service_date=today,
-        service_odometer=vehicle.odometer,
+        service_date=service_date_obj,
+        service_odometer=service_odometer,
+        comment=service_comment,
     )
 
     # Перезагружаем страницу с обновленным списком

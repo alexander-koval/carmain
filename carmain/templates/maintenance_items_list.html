@@ -1,7 +1,7 @@
 <!-- Шаблон для отображения только списка деталей, требующих обслуживания -->
 <div id="maintenance-items-list">
     {% if maintenance_items %}
-    <div class="row">
+    <div class="row" x-data="{}">
         {% for item in maintenance_items %}
         <div class="col-lg-6 mb-3">
             <div class="card shadow-sm h-100" style="border-top: 4px solid #ffe216; transition: all 0.2s ease;">
@@ -46,9 +46,9 @@
 
                     <button class="btn btn-sm btn-outline-success ms-2"
                             style="z-index: 2; position: relative;"
-                            hx-post="/vehicles/{{ vehicle.id }}/maintenance-items/{{ item.id }}/service"
-                            hx-target="#maintenance-items-list"
-                            hx-swap="outerHTML">
+                            data-toggle="modal"
+                            data-target="#serviceModal"
+                            @click='$dispatch("open-service-modal", { id: {{ item.id|tojson }}, name: {{ item.name|tojson }} });'>
                         <i class="fas fa-check me-1"></i> Обслужено
                     </button>
                 </div>
@@ -115,4 +115,83 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Modal для подтверждения обслуживания -->
+    <div class="modal fade"
+         id="serviceModal"
+         tabindex="-1"
+         role="dialog"
+         x-data="{
+                             itemId: null,
+                             itemName: '',
+                             vehicleId: '{{ vehicle.id }}',
+                             serviceDate: '{{ today }}',
+                             serviceOdometer: {{ vehicle.odometer if vehicle.odometer else 'null' }},
+                             serviceComment: '',
+                             servicePhoto: null,
+                             dynamicHxPostUrl: '',
+                         }"
+         @open-service-modal.window="
+                             itemId = $event.detail.id;
+                             itemName = $event.detail.name;
+                             $root.querySelector('.modal-title').textContent = 'Подтверждение: ' + itemName;
+                             serviceDate = '{{ today }}';
+                             serviceOdometer = {{ vehicle.odometer if vehicle.odometer else 'null' }};
+                             serviceComment = '';
+                             if ($refs.servicePhotoInput) $refs.servicePhotoInput.value = null;
+                             dynamicHxPostUrl = `/vehicles/${vehicleId}/maintenance-items/${itemId}/service`;
+                            console.log('Alpine - Updated dynamicHxPostUrl:', dynamicHxPostUrl);
+
+                            let form = $el.querySelector('#serviceForm');
+                            if (form) {
+                                form.setAttribute('hx-post', dynamicHxPostUrl);
+                                htmx.process(form);
+                            }
+                         "
+         @hidden.bs.modal="
+                             itemId = null;
+                             itemName = '';
+                             dynamicHxPostUrl = '';
+                             $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serviceModalLabel">Подтверждение обслуживания</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="serviceForm" :hx-post="dynamicHxPostUrl" hx-target="#maintenance-items-list"
+                          hx-swap="outerHTML"  hx-encoding="multipart/form-data">
+                        <input type="hidden" name="item_id" :value="itemId">
+                        <div class="form-group">
+                            <label for="serviceDate">Период обслуживания</label>
+                            <input type="date" class="form-control" id="serviceDate" name="service_date"
+                                   value="{{ today }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="serviceOdometer">Показание одометра (км)</label>
+                            <input type="number" class="form-control" id="serviceOdometer" name="service_odometer"
+                                   value="{{ vehicle.odometer }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="serviceComment">Комментарий</label>
+                            <textarea class="form-control" id="serviceComment" name="service_comment"
+                                      rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="servicePhoto">Фото</label>
+                            <input type="file" class="form-control-file" id="servicePhoto" name="service_photo">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="submit" form="serviceForm" class="btn btn-success">Обслужено</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>

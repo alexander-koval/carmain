@@ -1,7 +1,6 @@
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Any
 from collections.abc import Sequence
 from fastapi import Depends
-from pydantic import BaseModel
 from sqlalchemy import select, update, insert, delete, Row, RowMapping
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -48,13 +47,12 @@ class BaseRepository(Repository[K, M]):
             raise DuplicatedError(detail=str(e.orig))
         return obj
 
-    async def update_by_id(self, obj_id: K, update_data: BaseModel) -> M:
+    async def update_by_id(self, obj_id: K, update_payload: dict[str, Any]) -> M:
         db_obj = await self.session.get(self.model, obj_id)
         if not db_obj:
             raise NotFoundError(detail=f"not found id : {obj_id}")
 
-        update_payload_dict = update_data.model_dump(exclude_unset=True)
-        for key, value in update_payload_dict.items():
+        for key, value in update_payload.items():
             setattr(db_obj, key, value)
 
         try:

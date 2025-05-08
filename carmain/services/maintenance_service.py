@@ -91,9 +91,12 @@ class MaintenanceService(BaseService):
         return await self.user_maintenance_repository.create(db_item)
 
     async def update_user_maintenance_item(
-        self, item_id: uuid.UUID, update_data: BaseModel
+        self, item_id: uuid.UUID, schema: BaseModel
     ) -> Optional[UserMaintenanceItem]:
         """Обновить элемент обслуживания пользователя"""
+        update_data: dict[str, Any] = schema.model_dump(
+            exclude_unset=True, exclude_defaults=True, exclude_none=True
+        )
         return await self.user_maintenance_repository.update_by_id(item_id, update_data)
 
     async def delete_user_maintenance_item(self, item_id: uuid.UUID) -> bool:
@@ -120,6 +123,8 @@ class MaintenanceService(BaseService):
         item_id: uuid.UUID,
         service_date: date,
         service_odometer: Optional[int] = None,
+        comment: Optional[str] = None,
+        photo_path: Optional[str] = None,
     ) -> Optional[ServiceRecord]:
         """Отметить элемент как обслуженный"""
         # Проверяем, что элемент принадлежит пользователю
@@ -133,13 +138,20 @@ class MaintenanceService(BaseService):
             if vehicle:
                 service_odometer = vehicle.odometer
 
+        # Используем переданный комментарий или создаем стандартный
+        if comment is None or comment.strip() == "":
+            comment = f"Обслуживание выполнено {service_date.strftime('%d.%m.%Y')}"
+
         # Создаем запись об обслуживании
         record_data = {
             "user_item_id": item_id,
             "service_date": service_date,
             "service_odometer": service_odometer,
-            "comment": f"Обслуживание выполнено {service_date.strftime('%d.%m.%Y')}",
+            "comment": comment,
         }
+
+        # if photo_path:
+        #     record_data["photo_path"] = photo_path
 
         return await self.maintenance_repository.create_service_record(record_data)
 

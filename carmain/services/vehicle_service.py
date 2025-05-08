@@ -1,5 +1,5 @@
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 from collections.abc import Sequence
 from fastapi import Depends
 
@@ -29,12 +29,10 @@ class VehicleService(BaseService[uuid.UUID, VehicleSchema, Vehicle]):
         return await self.repository.create(vehicle)
 
     async def patch(self, obj_id: uuid.UUID, schema: VehicleSchema) -> Vehicle:
-        vehicle = Vehicle(
-            **schema.model_dump(
-                exclude_unset=True, exclude_defaults=True, exclude_none=True
-            )
+        update_data: dict[str, Any] = schema.model_dump(
+            exclude_unset=True, exclude_defaults=True, exclude_none=True
         )
-        return await self.repository.update_by_id(obj_id, vehicle)
+        return await self.repository.update_by_id(obj_id, update_data)
 
     async def remove_by_id(self, obj_id: uuid.UUID) -> Vehicle:
         return await self.repository.delete_by_id(obj_id)

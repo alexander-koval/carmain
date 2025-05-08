@@ -1,5 +1,9 @@
+import json
 import logging
+import uuid
+
 from fastapi import Depends
+from markupsafe import Markup
 from sqladmin import Admin
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -52,21 +56,40 @@ carmain.include_router(maintenance_view.router)
 templates = Jinja2Templates(directory="carmain/templates")
 
 
+def to_json_filter(value):
+    if isinstance(value, uuid.UUID):
+        return Markup(json.dumps(str(value)))
+    return Markup(json.dumps(value))
+
+
+templates.env.filters["tojson"] = to_json_filter
+
+# def to_json_filter(value):
+#     """
+#     Преобразует объект Python в строку JSON, безопасную для вставки в HTML/JS.
+#     Использует markupsafe.Markup для предотвращения двойного HTML-экранирования.
+#     """
+#     return Markup(json.dumps(value))
+#
+#
+# templates.env.filters["tojson"] = to_json_filter
+
+
 @carmain.get("/")
 async def index(
-    request: Request, 
+    request: Request,
     user: User = Depends(auth_router.optional_user),
-    vehicle_service: vehicle_view.VehicleService = Depends()
+    vehicle_service: vehicle_view.VehicleService = Depends(),
 ):
     if not user:
         return RedirectResponse(url="/auth/login", status_code=302)
-    
+
     if user.is_active and user.is_verified:
         vehicles = await vehicle_service.get_user_vehicles()
         return templates.TemplateResponse(
-            request=request, 
-            name="garage.html", 
-            context={"vehicles": vehicles, "user": user}
+            request=request,
+            name="garage.html",
+            context={"vehicles": vehicles, "user": user},
         )
     return RedirectResponse(url="/auth/login", status_code=302)
 
