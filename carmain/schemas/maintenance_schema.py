@@ -1,8 +1,9 @@
 import uuid
 from datetime import date, datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Annotated
 
+from fastapi import Form, UploadFile, File
 from pydantic import BaseModel, Field
 
 
@@ -74,28 +75,63 @@ class UserMaintenanceItem(UserMaintenanceItemBase):
 
 
 class ServiceRecordBase(BaseModel):
-    user_item_id: int
+    user_item_id: uuid.UUID
     service_date: date
     service_odometer: int
     comment: Optional[str] = None
+    service_photo: Optional[UploadFile] = File(None)
 
 
-class ServiceRecordCreate(ServiceRecordBase):
+class ServiceRecord(ServiceRecordBase):
+
+    @classmethod
+    def as_form(
+        cls,
+        user_item_id: Annotated[uuid.UUID, Form()],
+        service_date: Annotated[Optional[date], Form()] = None,
+        service_odometer: Annotated[Optional[int], Form()] = None,
+        comment: Annotated[Optional[str], Form()] = None,
+        service_photo: Optional[UploadFile] = None,
+    ):
+        return cls(
+            user_item_id=user_item_id,
+            service_date=service_date,
+            service_odometer=service_odometer,
+            comment=comment,
+            service_photo=service_photo,
+        )
+
+    # class Config:
+    #     orm_mode = True
+
+
+class ServiceRecordCreate(ServiceRecord):
     pass
 
 
 class ServiceRecordUpdate(BaseModel):
+    user_item_id: uuid.UUID
     service_date: Optional[date] = None
     service_odometer: Optional[int] = None
     comment: Optional[str] = None
+    service_photo: Optional[UploadFile] = File(None)
 
-
-class ServiceRecord(ServiceRecordBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
+    @classmethod
+    def as_form(
+        cls,
+        user_item_id: Annotated[uuid.UUID, Form()],
+        service_date: Annotated[Optional[date], Form()] = None,
+        service_odometer: Annotated[Optional[int], Form()] = None,
+        comment: Annotated[Optional[str], Form()] = None,
+        service_photo: Optional[UploadFile] = None,
+    ):
+        return cls(
+            user_item_id=user_item_id,
+            service_date=service_date,
+            service_odometer=service_odometer,
+            comment=comment,
+            service_photo=service_photo,
+        )
 
 
 class MaintenanceItemDisplay(BaseModel):

@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import List, Optional, Dict, Any, Tuple, Annotated, Sequence, Coroutine
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -20,6 +20,8 @@ from carmain.schemas.maintenance_schema import (
     MaintenanceItemStatus,
     MaintenanceItemType,
     MaintenanceItemDisplay,
+    ServiceRecordCreate,
+    UserMaintenanceItemUpdate,
 )
 from carmain.services.base_service import BaseService
 from carmain.routers.v1.auth_router import current_active_verified_user
@@ -120,40 +122,57 @@ class MaintenanceService(BaseService):
 
     async def mark_item_as_serviced(
         self,
-        item_id: uuid.UUID,
-        service_date: date,
-        service_odometer: Optional[int] = None,
-        comment: Optional[str] = None,
-        photo_path: Optional[str] = None,
+        service_record_create: ServiceRecordCreate,
+        # item_id: uuid.UUID,
+        # service_date: date,
+        # service_odometer: Optional[int] = None,
+        # comment: Optional[str] = None,
+        # photo_path: Optional[str] = None,
     ) -> Optional[ServiceRecord]:
         """Отметить элемент как обслуженный"""
         # Проверяем, что элемент принадлежит пользователю
-        item = await self.maintenance_repository.get_user_maintenance_item(item_id)
+        item = await self.user_maintenance_repository.get_by_id(
+            service_record_create.user_item_id
+        )
         if not item or item.user_id != self.user.id:
-            return None
+            raise HTTPException(
+                status_code=404, detail="Элемент обслуживания не найден"
+            )
 
         # Если не передан пробег, получаем текущий пробег автомобиля
-        if service_odometer is None:
+        if service_record_create.service_odometer is None:
             vehicle = await self.vehicle_repository.get_vehicle(item.vehicle_id)
             if vehicle:
-                service_odometer = vehicle.odometer
+                service_record_create.service_odometer = vehicle.odometer
 
         # Используем переданный комментарий или создаем стандартный
-        if comment is None or comment.strip() == "":
-            comment = f"Обслуживание выполнено {service_date.strftime('%d.%m.%Y')}"
+        if (
+            service_record_create.comment is None
+            or service_record_create.comment.strip() == ""
+        ):
+            service_record_create.comment = f"Обслуживание выполнено {service_record_create.service_date.strftime('%d.%m.%Y')}"
 
         # Создаем запись об обслуживании
-        record_data = {
-            "user_item_id": item_id,
-            "service_date": service_date,
-            "service_odometer": service_odometer,
-            "comment": comment,
-        }
+        record_data = service_record_create.model_dump(
+            exclude_unset=True, exclude_defaults=True, exclude_none=True
+        )
 
         # if photo_path:
         #     record_data["photo_path"] = photo_path
+        db_record = ServiceRecord(**record_data)
+        await self.record_repository.create(db_record)
 
-        return await self.maintenance_repository.create_service_record(record_data)
+        user_maintenance_item_update = UserMaintenanceItemUpdate(
+            last_service_odometer=service_record_create.service_odometer,
+            last_service_date=service_record_create.service_date,
+        )
+        maintenance_item_payload = user_maintenance_item_update.model_dump(
+            exclude_unset=True, exclude_defaults=True, exclude_none=True
+        )
+        db_item = await self.user_maintenance_repository.update_by_id(
+            item.id, maintenance_item_payload
+        )
+        return db_item
 
     async def get_items_requiring_service(
         self, vehicle_id: uuid.UUID, page: int = 1, page_size: int = 10

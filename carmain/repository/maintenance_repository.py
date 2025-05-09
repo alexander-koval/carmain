@@ -129,34 +129,6 @@ class MaintenanceRepository(BaseRepository):
         result = await self.session.execute(query)
         return result.scalars().unique().all()
 
-    async def create_service_record(self, record_data: dict) -> ServiceRecord:
-        """Создать запись об обслуживании"""
-        db_record = ServiceRecord(**record_data)
-        self.session.add(db_record)
-        await self.session.commit()
-        await self.session.refresh(db_record)
-
-        # Обновляем информацию о последнем обслуживании в UserMaintenanceItem
-        user_item_id = record_data.get("user_item_id")
-        service_date = record_data.get("service_date")
-        service_odometer = record_data.get("service_odometer")
-
-        if user_item_id and (service_date or service_odometer):
-            query = select(UserMaintenanceItem).where(
-                UserMaintenanceItem.id == user_item_id
-            )
-            result = await self.session.execute(query)
-            user_item = result.scalar_one_or_none()
-
-            if user_item:
-                if service_date:
-                    user_item.last_service_date = service_date
-                if service_odometer:
-                    user_item.last_service_odometer = service_odometer
-                await self.session.commit()
-
-        return db_record
-
     async def get_maintenance_items_requiring_service(
         self, user_id: int, vehicle_id: uuid.UUID, skip: int = 0, limit: int = 10
     ) -> Tuple[List[UserMaintenanceItem], int]:

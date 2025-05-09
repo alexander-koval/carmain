@@ -26,7 +26,7 @@ class BaseRepository(Repository[K, M]):
         # query = await self.session.query(self.model)
         if eager:
             for eager in getattr(self.model, "eagers", []):
-                query = query.options(joinedload(getattr(M, eager)))
+                query = query.options(joinedload(getattr(self.model, eager)))
         query = query.where(self.model.id == obj_id)
         result = await self.session.scalar(query)
         if not result:

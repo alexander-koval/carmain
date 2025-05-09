@@ -30,7 +30,7 @@ from carmain.schemas.maintenance_schema import (
     PaginationParams,
 )
 from carmain.services.maintenance_service import MaintenanceService
-
+from carmain.services.vehicle_service import VehicleService
 
 router = APIRouter(prefix="/vehicles", tags=["maintenance"])
 
@@ -111,6 +111,101 @@ async def maintenance_items_view(
             "maintenance_items": maintenance_items,
             "pagination": pagination_params,
             "today": date.today().isoformat(),
+        },
+    )
+
+
+# @router.post("/{vehicle_id}/maintenance-items/{item_id}/service")
+@router.post("/{vehicle_id}/maintenance")
+async def mark_item_as_serviced(
+    request: Request,
+    vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
+    # item_id: Annotated[
+    #     uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
+    # ],
+    maintenance_service: Annotated[MaintenanceService, Depends()],
+    vehicle_service: Annotated[VehicleService, Depends()],
+    service_record_create: ServiceRecordCreate = Depends(ServiceRecordCreate.as_form),
+    # item_id: uuid.UUID = Form(...),
+    # service_date: Optional[str] = Form(None),
+    # service_odometer: Optional[int] = Form(None),
+    # service_comment: Optional[str] = Form(None),
+    # service_photo: Optional[UploadFile] = File(None),
+):
+    """
+    Отметить деталь как обслуженную
+    """
+    # Проверяем, что элемент существует и принадлежит пользователю
+    # item = await maintenance_service.get_user_maintenance_item(item_id)
+    # if (
+    #     not item
+    #     or item.user_id != maintenance_service.user.id
+    #     or item.vehicle_id != vehicle_id
+    # ):
+    #     raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
+
+    # Обрабатываем дату обслуживания
+    service_date_obj = None
+    # if service_date:
+    #     try:
+    #         service_date_obj = date.fromisoformat(service_date)
+    #     except ValueError:
+    #         service_date_obj = date.today()
+    # else:
+    #     service_date_obj = date.today()
+    #
+    # # Получаем текущий пробег автомобиля если не указан другой
+    # if not service_odometer:
+    #     vehicle = await maintenance_service.get_vehicle(vehicle_id)
+    #     if not vehicle:
+    #         raise HTTPException(status_code=404, detail="Автомобиль не найден")
+    #     service_odometer = vehicle.odometer
+    #
+    # photo_path = None
+    # if service_photo:
+    #     try:
+    #         pass
+    #     except Exception as e:
+    #         pass
+
+    # Отмечаем деталь как обслуженную
+    # await maintenance_service.mark_item_as_serviced(
+    #     item_id=item_id,
+    #     service_date=service_date_obj,
+    #     service_odometer=service_odometer,
+    #     comment=service_comment,
+    # )
+    vehicle = await vehicle_service.get_by_id(vehicle_id)
+    if not vehicle:
+        raise HTTPException(
+            status_code=404, detail=f"Vehicle with id: {vehicle_id} not found"
+        )
+
+    await maintenance_service.mark_item_as_serviced(service_record_create)
+
+    # Перезагружаем страницу с обновленным списком
+    maintenance_items, pagination = (
+        await maintenance_service.get_items_requiring_service(
+            vehicle_id=vehicle_id,
+            page=1,  # После обновления возвращаемся на первую страницу
+        )
+    )
+
+    pagination_params = PaginationParams(
+        current_page=pagination["current_page"],
+        total_pages=pagination["total_pages"],
+        items_per_page=pagination["items_per_page"],
+        total_items=pagination["total_items"],
+    )
+
+    # Возвращаем только обновленный список элементов, так как используется HTMX
+    return templates.TemplateResponse(
+        "maintenance_items_list.html",
+        {
+            "request": request,
+            "vehicle": vehicle,
+            "maintenance_items": maintenance_items,
+            "pagination": pagination_params,
         },
     )
 
@@ -279,90 +374,6 @@ async def untrack_maintenance_item(
     return templates.TemplateResponse(
         "maintenance_directory_card.html",
         {"request": request, "vehicle_id": vehicle_id, "item": item},
-    )
-
-
-@router.post("/{vehicle_id}/maintenance-items/{item_id}/service")
-async def mark_item_as_serviced(
-    request: Request,
-    vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
-    item_id: Annotated[
-        uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
-    ],
-    maintenance_service: Annotated[MaintenanceService, Depends()],
-    service_date: Optional[str] = Form(None),
-    service_odometer: Optional[int] = Form(None),
-    service_comment: Optional[str] = Form(None),
-    service_photo: Optional[UploadFile] = File(None),
-):
-    """
-    Отметить деталь как обслуженную
-    """
-    # Проверяем, что элемент существует и принадлежит пользователю
-    item = await maintenance_service.get_user_maintenance_item(item_id)
-    if (
-        not item
-        or item.user_id != maintenance_service.user.id
-        or item.vehicle_id != vehicle_id
-    ):
-        raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
-
-    # Обрабатываем дату обслуживания
-    service_date_obj = None
-    if service_date:
-        try:
-            service_date_obj = date.fromisoformat(service_date)
-        except ValueError:
-            service_date_obj = date.today()
-    else:
-        service_date_obj = date.today()
-
-    # Получаем текущий пробег автомобиля если не указан другой
-    if not service_odometer:
-        vehicle = await maintenance_service.get_vehicle(vehicle_id)
-        if not vehicle:
-            raise HTTPException(status_code=404, detail="Автомобиль не найден")
-        service_odometer = vehicle.odometer
-
-    photo_path = None
-    if service_photo:
-        try:
-            pass
-        except Exception as e:
-            pass
-
-    # Отмечаем деталь как обслуженную
-    await maintenance_service.mark_item_as_serviced(
-        item_id=item_id,
-        service_date=service_date_obj,
-        service_odometer=service_odometer,
-        comment=service_comment,
-    )
-
-    # Перезагружаем страницу с обновленным списком
-    maintenance_items, pagination = (
-        await maintenance_service.get_items_requiring_service(
-            vehicle_id=vehicle_id,
-            page=1,  # После обновления возвращаемся на первую страницу
-        )
-    )
-
-    pagination_params = PaginationParams(
-        current_page=pagination["current_page"],
-        total_pages=pagination["total_pages"],
-        items_per_page=pagination["items_per_page"],
-        total_items=pagination["total_items"],
-    )
-
-    # Возвращаем только обновленный список элементов, так как используется HTMX
-    return templates.TemplateResponse(
-        "maintenance_items_list.html",
-        {
-            "request": request,
-            "vehicle": vehicle,
-            "maintenance_items": maintenance_items,
-            "pagination": pagination_params,
-        },
     )
 
 
