@@ -123,15 +123,10 @@ class MaintenanceService(BaseService):
     async def mark_item_as_serviced(
         self,
         service_record_create: ServiceRecordCreate,
-        # item_id: uuid.UUID,
-        # service_date: date,
-        # service_odometer: Optional[int] = None,
-        # comment: Optional[str] = None,
-        # photo_path: Optional[str] = None,
-    ) -> Optional[ServiceRecord]:
+    ) -> Optional[UserMaintenanceItem]:
         """Отметить элемент как обслуженный"""
         # Проверяем, что элемент принадлежит пользователю
-        item = await self.user_maintenance_repository.get_by_id(
+        item: UserMaintenanceItem = await self.user_maintenance_repository.get_by_id(
             service_record_create.user_item_id
         )
         if not item or item.user_id != self.user.id:
@@ -141,9 +136,8 @@ class MaintenanceService(BaseService):
 
         # Если не передан пробег, получаем текущий пробег автомобиля
         if service_record_create.service_odometer is None:
-            vehicle = await self.vehicle_repository.get_vehicle(item.vehicle_id)
-            if vehicle:
-                service_record_create.service_odometer = vehicle.odometer
+            if item.vehicle:
+                service_record_create.service_odometer = item.vehicle.odometer
 
         # Используем переданный комментарий или создаем стандартный
         if (
@@ -169,7 +163,7 @@ class MaintenanceService(BaseService):
         maintenance_item_payload = user_maintenance_item_update.model_dump(
             exclude_unset=True, exclude_defaults=True, exclude_none=True
         )
-        db_item = await self.user_maintenance_repository.update_by_id(
+        db_item: UserMaintenanceItem = await self.user_maintenance_repository.update_by_id(
             item.id, maintenance_item_payload
         )
         return db_item
