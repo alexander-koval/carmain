@@ -8,11 +8,11 @@
                 </div>
                 <div class="maintenance-status mb-3">
                     <span class="maintenance-badge badge-upcoming">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> Замена масла через 500 км
+                        <i class="fas fa-triangle-exclamation me-1"></i> Замена масла через 500 км
                     </span>
                 </div>
-                <a href="/vehicles/{{ vehicle.id }}/maintenance" class="btn btn-carmain btn-block" hx-boost="false">
-                    <i class="fas fa-wrench mr-2"></i> Обслуживание
+                <a href="/vehicles/{{ vehicle.id }}/maintenance" class="btn btn-carmain w-100" hx-boost="false">
+                    <i class="fas fa-wrench me-2"></i> Обслуживание
                 </a>
             </div>
             <div class="col-md-7">
@@ -38,11 +38,11 @@
                 <div class="d-flex justify-content-between">
                     <button class="btn btn-outline-secondary btn-sm" 
                            onclick="editVehicle('{{ vehicle.id }}', '{{ vehicle.brand }}', '{{ vehicle.model }}', '{{ vehicle.year.strftime('%Y-%m-%d') }}', {{ vehicle.odometer }})"
-                           data-toggle="modal" data-target="#editCarModal">
-                        <i class="fas fa-edit mr-1"></i> Редактировать
+                           data-bs-toggle="modal" data-bs-target="#editCarModal">
+                        <i class="fas fa-edit me-1"></i> Редактировать
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" hx-get="/vehicles/{{ vehicle.id }}/delete" hx-target="#confirmDeleteModalBody" data-toggle="modal" data-target="#confirmDeleteModal">
-                        <i class="fas fa-trash-alt mr-1"></i> Удалить
+                    <button class="btn btn-outline-danger btn-sm" hx-get="/vehicles/{{ vehicle.id }}/delete" hx-target="#confirmDeleteModalBody" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                        <i class="fas fa-trash-alt me-1"></i> Удалить
                     </button>
                 </div>
             </div>

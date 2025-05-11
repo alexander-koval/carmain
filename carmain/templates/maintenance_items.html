@@ -54,11 +54,12 @@
     <!-- Контейнер для списка или пустого состояния -->
     {% include "maintenance_items_list.html" %}
 
-        <!-- Modal для подтверждения обслуживания -->
+        <!-- Modal для подтверждения обслуживания (Bootstrap 5) -->
     <div class="modal fade"
          id="serviceModal"
          tabindex="-1"
-         role="dialog"
+         aria-labelledby="serviceModalLabel"
+         aria-hidden="true"
          x-data="{
                              itemId: null,
                              itemName: '',
@@ -80,18 +81,11 @@
          x-on:htmx:after-settle.window="
               if ($event.detail.elt.id === 'maintenance-items-list' && $event.detail.xhr.status >= 200 && $event.detail.xhr.status < 300) {
                   console.log('HTMX request successful, attempting to close modal.');
-                  var modalEl = document.getElementById('serviceModal'); // ID вашего модального окна
-                  if (modalEl) {
-                      // Для Bootstrap 4 (с jQuery)
-                      if (typeof $ !== 'undefined' && $(modalEl).data('bs.modal') && $(modalEl).data('bs.modal')._isShown) {
-                          $(modalEl).modal('hide');
-                      }
-                      // Для Bootstrap 5 (ванильный JS)
-                      else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                          var modalInstance = bootstrap.Modal.getInstance(modalEl);
-                          if (modalInstance && modalInstance._isShown) {
-                              modalInstance.hide();
-                          }
+                  var modalEl = document.getElementById('serviceModal');
+                  if (modalEl && typeof bootstrap !== 'undefined') {
+                      var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                      if (modalInstance) {
+                          modalInstance.hide();
                       }
                   }
               }"
@@ -103,38 +97,36 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="serviceModalLabel">Подтверждение обслуживания</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="serviceForm" hx-post="/vehicles/{{ vehicle.id }}/maintenance" hx-target="#maintenance-items-list"
                           hx-swap="outerHTML"  hx-encoding="multipart/form-data">
 
                         <input type="hidden" name="user_item_id" :value="itemId">
-                        <div class="form-group">
-                            <label for="serviceDate">Период обслуживания</label>
+                        <div class="mb-3">
+                            <label for="serviceDate" class="form-label">Период обслуживания</label>
                             <input type="date" class="form-control" id="serviceDate" name="service_date"
                                    value="{{ today }}" required>
                         </div>
-                        <div class="form-group">
-                            <label for="serviceOdometer">Показание одометра (км)</label>
+                        <div class="mb-3">
+                            <label for="serviceOdometer" class="form-label">Показание одометра (км)</label>
                             <input type="number" class="form-control" id="serviceOdometer" name="service_odometer"
                                    value="{{ vehicle.odometer }}" required>
                         </div>
-                        <div class="form-group">
-                            <label for="serviceComment">Комментарий</label>
+                        <div class="mb-3">
+                            <label for="serviceComment" class="form-label">Комментарий</label>
                             <textarea class="form-control" id="serviceComment" name="service_comment"
                                       rows="3"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label for="servicePhoto">Фото</label>
-                            <input type="file" class="form-control-file" id="servicePhoto" name="service_photo">
+                        <div class="mb-3">
+                            <label for="servicePhoto" class="form-label">Фото</label>
+                            <input type="file" class="form-control" id="servicePhoto" name="service_photo">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     <button type="submit" form="serviceForm" class="btn btn-success">Обслужено</button>
                 </div>
             </div>
