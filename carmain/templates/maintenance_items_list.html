@@ -9,7 +9,7 @@
                     {% if item.type == 'oil_change' %}
                     <i class="fas fa-oil-can fa-fw fa-2x me-3 text-muted"></i>
                     {% elif item.type == 'brake_pads' %}
-                    <i class="fas fa-brake-system fa-fw fa-2x me-3 text-muted"></i>
+                    <i class="fas fa-exclamation-circle fa-fw fa-2x me-3 text-muted"></i>
                     {% elif item.type == 'timing_belt' %}
                     <i class="fas fa-cogs fa-fw fa-2x me-3 text-muted"></i>
                     {% elif item.type == 'air_filter' %}
@@ -49,7 +49,9 @@
                             data-bs-toggle="modal"
                             data-bs-target="#serviceModal"
                             @click='$dispatch("open-service-modal", { id: {{ item.id|tojson }}, name: {{ item.name|tojson }} });'>
-                        <i class="fas fa-check me-1"></i> Обслужено
+                        <span style="white-space: nowrap;">
+                            <i class="fas fa-check me-1"></i> Обслужено
+                        </span>
                     </button>
                 </div>
             </div>

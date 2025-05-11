@@ -111,51 +111,41 @@
                 font-weight: 500;
                 color: #666;
             }
-            
-            /* Карусель */
-            #garageCarousel {
-                margin-bottom: 3rem;
+
+            @media (min-width: 769px) {
+                .carousel-control-prev, .carousel-control-next {
+                    width: 7%;
+                    opacity: 0.8;
+                    background: rgba(255, 226, 22, 0.2);
+                    height: 60px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border-radius: 30px;
+                }
+                .carousel-control-prev {
+                    left: -10px;
+                }
+                .carousel-control-next {
+                    right: -10px;
+                }
+                .carousel-control-prev-icon, .carousel-control-next-icon {
+                    background-color: #ffcc00;
+                    border-radius: 50%;
+                    padding: 15px;
+                    background-size: 50% 50%;
+                }
+                .carousel-indicators {
+                    bottom: -50px;
+                }
+                .carousel-indicators button {
+                    width: 12px !important;
+                    height: 12px !important;
+                    margin: 0 5px !important;
+                    border-radius: 50% !important;
+                    background-color: #ffcc00 !important;
+                }
             }
-            /* Зафиксируем высоту карусели для предотвращения прыжков */
-            #garageCarousel .carousel-inner {
-                min-height: 400px; /* Минимальная высота для внутреннего содержимого карусели */
-            }
-            
-            .carousel-control-prev, .carousel-control-next {
-                width: 7%;
-                opacity: 0.8;
-                background: rgba(255, 226, 22, 0.2);
-                height: 60px;
-                top: 50%;
-                transform: translateY(-50%);
-                border-radius: 30px;
-            }
-            .carousel-control-prev {
-                left: -10px;
-            }
-            .carousel-control-next {
-                right: -10px;
-            }
-            .carousel-control-prev-icon, .carousel-control-next-icon {
-                background-color: #ffcc00;
-                border-radius: 50%;
-                padding: 15px;
-                background-size: 50% 50%;
-            }
-            .carousel-indicators {
-                bottom: -50px;
-            }
-            .carousel-indicators button {
-                background-color: #ffcc00;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                margin: 0 5px;
-            }
-            .carousel-indicators .active {
-                background-color: #e6b800;
-            }
-            
+
             /* Значки обслуживания */
             .maintenance-badge {
                 display: inline-block;
@@ -394,22 +384,7 @@
                 pause: 'hover'   // Пауза при наведении
             });
         }
-        
-        // Предотвращаем прыжки высоты при переключении слайдов
-        var carouselItems = document.querySelectorAll('.carousel-item');
-        var maxHeight = 0;
-        carouselItems.forEach(function(item) {
-            var itemHeight = item.offsetHeight;
-            maxHeight = Math.max(maxHeight, itemHeight);
-        });
-        
-        if (maxHeight > 0) {
-            var carouselInner = document.querySelector('.carousel-inner');
-            if (carouselInner) {
-                carouselInner.style.minHeight = maxHeight + 'px';
-            }
-        }
-        
+
         // Отслеживаем отправку формы для динамического определения типа операции
         var vehicleForm = document.getElementById('vehicleForm');
         if (vehicleForm) {
