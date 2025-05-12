@@ -10,7 +10,7 @@
             <h2>Мой гараж</h2>
             {% if user %}
             <div class="user-info">
-                <span class="mr-3">{{ user.email }}</span>
+                <span class="me-3">{{ user.email }}</span>
                 <a href="/auth/logout" class="btn btn-sm btn-outline-secondary">Выйти</a>
             </div>
             {% endif %}
@@ -111,51 +111,41 @@
                 font-weight: 500;
                 color: #666;
             }
-            
-            /* Карусель */
-            #garageCarousel {
-                margin-bottom: 3rem;
+
+            @media (min-width: 769px) {
+                .carousel-control-prev, .carousel-control-next {
+                    width: 7%;
+                    opacity: 0.8;
+                    background: rgba(255, 226, 22, 0.2);
+                    height: 60px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border-radius: 30px;
+                }
+                .carousel-control-prev {
+                    left: -10px;
+                }
+                .carousel-control-next {
+                    right: -10px;
+                }
+                .carousel-control-prev-icon, .carousel-control-next-icon {
+                    background-color: #ffcc00;
+                    border-radius: 50%;
+                    padding: 15px;
+                    background-size: 50% 50%;
+                }
+                .carousel-indicators {
+                    bottom: -50px;
+                }
+                .carousel-indicators button {
+                    width: 12px !important;
+                    height: 12px !important;
+                    margin: 0 5px !important;
+                    border-radius: 50% !important;
+                    background-color: #ffcc00 !important;
+                }
             }
-            /* Зафиксируем высоту карусели для предотвращения прыжков */
-            #garageCarousel .carousel-inner {
-                min-height: 400px; /* Минимальная высота для внутреннего содержимого карусели */
-            }
-            
-            .carousel-control-prev, .carousel-control-next {
-                width: 7%;
-                opacity: 0.8;
-                background: rgba(255, 226, 22, 0.2);
-                height: 60px;
-                top: 50%;
-                transform: translateY(-50%);
-                border-radius: 30px;
-            }
-            .carousel-control-prev {
-                left: -10px;
-            }
-            .carousel-control-next {
-                right: -10px;
-            }
-            .carousel-control-prev-icon, .carousel-control-next-icon {
-                background-color: #ffcc00;
-                border-radius: 50%;
-                padding: 15px;
-                background-size: 50% 50%;
-            }
-            .carousel-indicators {
-                bottom: -50px;
-            }
-            .carousel-indicators button {
-                background-color: #ffcc00;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                margin: 0 5px;
-            }
-            .carousel-indicators .active {
-                background-color: #e6b800;
-            }
-            
+
             /* Значки обслуживания */
             .maintenance-badge {
                 display: inline-block;
@@ -213,30 +203,28 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addCarModalLabel">Добавить новый автомобиль</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="addCarModalBody">
                     <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML">
-                        <div class="form-group">
-                            <label for="brand">Марка</label>
+                        <div class="mb-3">
+                            <label for="brand" class="form-label">Марка</label>
                             <input type="text" class="form-control" id="brand" name="brand" required>
                         </div>
-                        <div class="form-group">
-                            <label for="model">Модель</label>
+                        <div class="mb-3">
+                            <label for="model" class="form-label">Модель</label>
                             <input type="text" class="form-control" id="model" name="model" required>
                         </div>
-                        <div class="form-group">
-                            <label for="year">Год выпуска</label>
+                        <div class="mb-3">
+                            <label for="year" class="form-label">Год выпуска</label>
                             <input type="date" class="form-control" id="year" name="year" required>
                         </div>
-                        <div class="form-group">
-                            <label for="odometer">Текущий пробег (км)</label>
+                        <div class="mb-3">
+                            <label for="odometer" class="form-label">Текущий пробег (км)</label>
                             <input type="number" class="form-control" id="odometer" name="odometer" required min="0">
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                             <button type="submit" class="btn btn-carmain">Сохранить</button>
                         </div>
                     </form>
@@ -251,26 +239,24 @@
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #e6f2ff;">
                     <h5 class="modal-title" id="editCarModalLabel">Редактировать автомобиль</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="editVehicleForm">
                         <input type="hidden" id="edit_vehicle_id" value="">
                         
-                        <div class="form-group">
-                            <label>Марка и модель</label>
-                            <p class="form-control-plaintext font-weight-bold" id="edit_brand_model"></p>
+                        <div class="mb-3">
+                            <label class="form-label">Марка и модель</label>
+                            <p class="form-control-plaintext fw-bold" id="edit_brand_model"></p>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="edit_year">Год выпуска</label>
+                        <div class="mb-3">
+                            <label for="edit_year" class="form-label">Год выпуска</label>
                             <input type="date" class="form-control" id="edit_year" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="edit_odometer">Текущий пробег (км)</label>
+                        <div class="mb-3">
+                            <label for="edit_odometer" class="form-label">Текущий пробег (км)</label>
                             <input type="number" class="form-control" id="edit_odometer" required min="0">
                         </div>
                         
@@ -278,7 +264,7 @@
                         <input type="hidden" id="edit_model">
                         
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                             <button type="button" id="updateVehicleBtn" class="btn btn-carmain">Обновить данные</button>
                         </div>
                     </div>
@@ -293,16 +279,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmDeleteModalLabel">Подтверждение удаления</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="confirmDeleteModalBody">
                     <p>Вы уверены, что хотите удалить этот автомобиль?</p>
                     <p class="text-danger"><small>Это действие нельзя отменить.</small></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
                 </div>
             </div>
@@ -314,11 +298,11 @@
 <script>
     // Font Awesome уже подключен в базовом шаблоне
     
-    // Функция предзаполнения формы для редактирования
+
     function editVehicle(id, brand, model, year, odometer) {
         console.log('Editing vehicle:', id, brand, model, year, odometer);
         
-        // Заполняем форму редактирования текущими данными
+
         document.getElementById('edit_vehicle_id').value = id;
         document.getElementById('edit_brand').value = brand;
         document.getElementById('edit_model').value = model;
@@ -326,17 +310,17 @@
         document.getElementById('edit_year').value = year;
         document.getElementById('edit_odometer').value = odometer;
         
-        // Настраиваем кнопку обновления для этого автомобиля
+
         var updateBtn = document.getElementById('updateVehicleBtn');
         
-        // Удаляем предыдущий обработчик, если он был
+
         if (updateBtn._vehicleUpdateHandler) {
             updateBtn.removeEventListener('click', updateBtn._vehicleUpdateHandler);
         }
         
-        // Создаем новый обработчик для этого автомобиля
+
         updateBtn._vehicleUpdateHandler = function() {
-            // Собираем данные из формы
+
             const vehicleData = {
                 vehicle_id: id,
                 brand: brand,
@@ -347,7 +331,7 @@
             
             console.log('Updating vehicle with data:', vehicleData);
             
-            // Выполняем PATCH запрос через HTMX API
+
             htmx.ajax('PATCH', '/vehicles/' + id + '/update', {
                 target: '#vehicle-card-' + id,
                 swap: 'outerHTML',
@@ -357,89 +341,86 @@
                 }
             });
             
-            // Закрываем модальное окно
-            $('#editCarModal').modal('hide');
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editCarModal'));
+            modal.hide();
         };
         
-        // Устанавливаем новый обработчик
+
         updateBtn.addEventListener('click', updateBtn._vehicleUpdateHandler);
         
         console.log('Update button configured for vehicle ID:', id);
     }
     
-    // Функция для сброса формы при добавлении нового автомобиля
+
     function resetVehicleForm() {
         console.log('Resetting form for new vehicle');
         
-        // Изменяем заголовок модального окна
+
         document.getElementById('addCarModalLabel').textContent = 'Добавить новый автомобиль';
         
-        // Очищаем форму
+
         document.getElementById('vehicle_id').value = '';
         document.getElementById('vehicleForm').reset();
         
-        // Удаляем атрибуты других HTTP-методов если они есть
+
         var form = document.getElementById('vehicleForm');
         form.removeAttribute('hx-patch');
         form.removeAttribute('hx-put');
         
-        // Устанавливаем метод POST для создания
+
         form.setAttribute('hx-post', '/api/v1/vehicles/create');
         console.log('Form configured for create:', form.getAttribute('hx-post'));
     }
     
-    // Инициализация карусели и обработчиков событий
-    $(document).ready(function() {
-        // Инициализация при загрузке страницы - устанавливаем форму на добавление нового автомобиля
-//        resetVehicleForm();
-        
-        $('#garageCarousel').carousel({
-            interval: false, // Отключаем автоматическую прокрутку
-            keyboard: true,  // Разрешаем управление клавиатурой
-            pause: 'hover'   // Пауза при наведении
-        });
-        
-        // Предотвращаем прыжки высоты при переключении слайдов
-        var maxHeight = 0;
-        $('.carousel-item').each(function(){
-            var itemHeight = $(this).height();
-            maxHeight = Math.max(maxHeight, itemHeight);
-        });
-        
-        if (maxHeight > 0) {
-            $('.carousel-inner').css('min-height', maxHeight + 'px');
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var carouselElement = document.getElementById('garageCarousel');
+        if (carouselElement) {
+            var carousel = new bootstrap.Carousel(carouselElement, {
+                interval: false,
+                keyboard: true,
+                pause: 'hover'
+            });
+        }
+
+
+        var vehicleForm = document.getElementById('vehicleForm');
+        if (vehicleForm) {
+            vehicleForm.addEventListener('submit', function(event) {
+
+                var vehicleId = document.getElementById('vehicle_id').value;
+                
+
+                this.removeAttribute('hx-post');
+                this.removeAttribute('hx-patch');
+                this.removeAttribute('hx-put');
+                
+                if (vehicleId) {
+
+                    this.setAttribute('hx-patch', '/api/v1/vehicles/' + vehicleId + '/update');
+                    console.log('Form submitted for update, ID:', vehicleId);
+                } else {
+
+                    this.setAttribute('hx-post', '/api/v1/vehicles/create');
+                    console.log('Form submitted for create');
+                }
+            });
         }
         
-        // Отслеживаем отправку формы для динамического определения типа операции
-        $('#vehicleForm').on('submit', function(event) {
-            // Автоматически выбираем правильный метод и URL на основе содержимого поля vehicle_id
-            var vehicleId = $('#vehicle_id').val();
-            var form = document.getElementById('vehicleForm');
-            
-            // Удаляем все предыдущие настройки HTTP методов
-            form.removeAttribute('hx-post');
-            form.removeAttribute('hx-patch');
-            form.removeAttribute('hx-put');
-            
-            if (vehicleId) {
-                // Редактирование - устанавливаем PATCH запрос
-                form.setAttribute('hx-patch', '/api/v1/vehicles/' + vehicleId + '/update');
-                console.log('Form submitted for update, ID:', vehicleId);
-            } else {
-                // Создание - устанавливаем POST запрос
-                form.setAttribute('hx-post', '/api/v1/vehicles/create');
-                console.log('Form submitted for create');
-            }
-        });
-        
-        // Сбрасываем форму при открытии модального окна через кнопку добавления
-        $('#addCarModal').on('show.bs.modal', function(event) {
-            // Если модальное окно было вызвано кнопкой добавления, сбрасываем форму
-            if (event.relatedTarget && !event.relatedTarget.classList.contains('edit-btn') && 
-                $(event.relatedTarget).closest('.add-car-card').length > 0) {
-//                resetVehicleForm();
-            }
-        });
+
+        var addCarModal = document.getElementById('addCarModal');
+        if (addCarModal) {
+            addCarModal.addEventListener('show.bs.modal', function(event) {
+
+                var button = event.relatedTarget;
+                if (button && !button.classList.contains('edit-btn') && 
+                    button.closest('.add-car-card')) {
+                    // resetVehicleForm();
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

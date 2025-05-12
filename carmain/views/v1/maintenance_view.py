@@ -34,7 +34,7 @@ from carmain.services.vehicle_service import VehicleService
 
 router = APIRouter(prefix="/vehicles", tags=["maintenance"])
 
-# Настройка шаблонизатора
+
 templates = Jinja2Templates(directory="carmain/templates")
 
 
@@ -45,8 +45,6 @@ def to_json_filter(value):
 
 
 templates.env.filters["tojson"] = to_json_filter
-
-# Используем инъекцию зависимостей напрямую через MaintenanceService
 
 
 @router.get("/{vehicle_id}/maintenance")
@@ -59,24 +57,20 @@ async def maintenance_items_view(
     """
     Отображение деталей, требующих обслуживания для конкретного автомобиля
     """
-    # Получаем автомобиль и проверяем, что он принадлежит пользователю
     vehicle = await maintenance_service.get_vehicle(vehicle_id)
     if not vehicle or vehicle.user_id != maintenance_service.user.id:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
 
-    # Получаем все автомобили пользователя (для выпадающего списка)
     user_vehicles = await maintenance_service.get_user_vehicles()
 
-    # Получаем элементы, требующие обслуживания
     maintenance_items, pagination = (
         await maintenance_service.get_items_requiring_service(
             vehicle_id=vehicle_id,
             page=page,
-            page_size=10,  # Константа или из конфигурации
+            page_size=10,
         )
     )
 
-    # Преобразуем пагинацию в DTO для передачи в шаблон
     pagination_params = PaginationParams(
         current_page=pagination["current_page"],
         total_pages=pagination["total_pages"],
@@ -84,10 +78,8 @@ async def maintenance_items_view(
         total_items=pagination["total_items"],
     )
 
-    # Проверяем, является ли запрос HTMX запросом с hx-target
     is_htmx_request = request.headers.get("HX-Request") == "true"
 
-    # Если это HTMX запрос, возвращаем только список элементов
     if is_htmx_request:
         return templates.TemplateResponse(
             "maintenance_items_list.html",
@@ -100,7 +92,6 @@ async def maintenance_items_view(
             },
         )
 
-    # Иначе возвращаем полную страницу
     return templates.TemplateResponse(
         "maintenance_items.html",
         {
@@ -166,30 +157,28 @@ async def all_maintenance_items_view(
     """
     Отображение справочника всех типов работ, с отметкой отслеживаемых пользователем
     """
-    # Проверяем право доступа к автомобилю
+
     vehicle = await maintenance_service.get_vehicle(vehicle_id)
     if not vehicle or vehicle.user_id != maintenance_service.user.id:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
 
-    # Получаем все типы работ
     all_items = await maintenance_service.get_maintenance_items(skip=0, limit=1000)
-    # Получаем отмеченные пользователем для данного автомобиля
+
     user_items = await maintenance_service.get_user_maintenance_items(
         vehicle_id=vehicle_id, limit=1000
     )
     tracked_ids = {ui.item_id for ui in user_items}
 
-    # Формируем список элементов для отображения
     items: List[Dict[str, Any]] = []
     for mi in all_items:
-        # Простейшая фильтрация по поиску
+
         if q and q.lower() not in mi.name.lower():
             continue
         is_tracked = mi.id in tracked_ids
-        # Фильтрация по отслеживаемым
+
         if tracked_only and not is_tracked:
             continue
-        # Определяем иконку исходя из названия
+
         name_lower = mi.name.lower()
         if "масл" in name_lower or "oil" in name_lower:
             icon = "oil-can"
@@ -213,7 +202,6 @@ async def all_maintenance_items_view(
             }
         )
 
-    # Проверяем HTMX запрос
     is_htmx = request.headers.get("HX-Request") == "true"
     context = {"request": request, "vehicle_id": vehicle_id, "maintenance_items": items}
     if is_htmx:
@@ -236,11 +224,11 @@ async def track_maintenance_item(
     vehicle = await maintenance_service.get_vehicle(vehicle_id)
     if not vehicle or vehicle.user_id != maintenance_service.user.id:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
-    # Создаем связь UserMaintenanceItem
+
     await maintenance_service.create_user_maintenance_item(
         {"item_id": item_id, "vehicle_id": vehicle_id}
     )
-    # Загружаем данные по работе
+
     mi = await maintenance_service.get_maintenance_item(item_id)
     if not mi:
         raise HTTPException(status_code=404, detail="Работа не найдена")
@@ -329,9 +317,9 @@ async def add_maintenance_item_view(
     """
     Страница добавления новой детали для отслеживания
     """
-    # Здесь будет форма для добавления новой детали
+
     # ...
-    # Временная заглушка
+
     return templates.TemplateResponse(
         "maintenance_items_add.html",
         {

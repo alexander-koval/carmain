@@ -125,7 +125,7 @@ class MaintenanceService(BaseService):
         service_record_create: ServiceRecordCreate,
     ) -> Optional[UserMaintenanceItem]:
         """Отметить элемент как обслуженный"""
-        # Проверяем, что элемент принадлежит пользователю
+
         item: UserMaintenanceItem = await self.user_maintenance_repository.get_by_id(
             service_record_create.user_item_id
         )
@@ -134,19 +134,16 @@ class MaintenanceService(BaseService):
                 status_code=404, detail="Элемент обслуживания не найден"
             )
 
-        # Если не передан пробег, получаем текущий пробег автомобиля
         if service_record_create.service_odometer is None:
             if item.vehicle:
                 service_record_create.service_odometer = item.vehicle.odometer
 
-        # Используем переданный комментарий или создаем стандартный
         if (
             service_record_create.comment is None
             or service_record_create.comment.strip() == ""
         ):
             service_record_create.comment = f"Обслуживание выполнено {service_record_create.service_date.strftime('%d.%m.%Y')}"
 
-        # Создаем запись об обслуживании
         record_data = service_record_create.model_dump(
             exclude_unset=True, exclude_defaults=True, exclude_none=True
         )
@@ -163,8 +160,10 @@ class MaintenanceService(BaseService):
         maintenance_item_payload = user_maintenance_item_update.model_dump(
             exclude_unset=True, exclude_defaults=True, exclude_none=True
         )
-        db_item: UserMaintenanceItem = await self.user_maintenance_repository.update_by_id(
-            item.id, maintenance_item_payload
+        db_item: UserMaintenanceItem = (
+            await self.user_maintenance_repository.update_by_id(
+                item.id, maintenance_item_payload
+            )
         )
         return db_item
 
@@ -175,18 +174,16 @@ class MaintenanceService(BaseService):
         Получить элементы, требующие обслуживания для конкретного автомобиля.
         Возвращает список элементов в формате отображения и информацию о пагинации.
         """
-        # Вычисляем параметры пагинации
+
         skip = (page - 1) * page_size
         limit = page_size
 
-        # Получаем элементы, требующие обслуживания
         items, total_count = (
             await self.maintenance_repository.get_maintenance_items_requiring_service(
                 self.user.id, vehicle_id, skip, limit
             )
         )
 
-        # Получаем информацию о текущем пробеге автомобиля
         vehicle = await self.vehicle_repository.get_vehicle(vehicle_id)
         if not vehicle:
             return [], {
@@ -198,13 +195,11 @@ class MaintenanceService(BaseService):
 
         current_odometer = vehicle.odometer
 
-        # Преобразуем в формат отображения с дополнительной информацией
         display_items = []
         for item in items:
-            # Определяем интервал обслуживания
+
             interval = item.custom_interval or item.maintenance_item.default_interval
 
-            # Определяем статус
             status = MaintenanceItemStatus.OK
 
             if item.last_service_odometer is None:
@@ -226,7 +221,6 @@ class MaintenanceService(BaseService):
                     # Элемент не требует обслуживания в ближайшее время
                     continue
 
-            # Определяем тип детали на основе названия, если не задан явно
             item_type = MaintenanceItemType.OTHER
             item_name = item.maintenance_item.name.lower()
 
@@ -243,8 +237,6 @@ class MaintenanceService(BaseService):
             elif "аккумулятор" in item_name or "батар" in item_name:
                 item_type = MaintenanceItemType.BATTERY
 
-            # Создаем объект отображения
-            # Преобразуем datetime в date для last_service_date, если он не None
             last_service_date = None
             if item.last_service_date:
                 if isinstance(item.last_service_date, datetime):
@@ -267,8 +259,7 @@ class MaintenanceService(BaseService):
 
             display_items.append(display_item)
 
-        # Информация о пагинации
-        total_pages = (total_count + page_size - 1) // page_size  # Округление вверх
+        total_pages = (total_count + page_size - 1) // page_size
         pagination = {
             "current_page": page,
             "total_pages": total_pages,

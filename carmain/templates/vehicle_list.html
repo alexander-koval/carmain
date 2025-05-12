@@ -1,60 +1,61 @@
 <!-- Список автомобилей для загрузки через HTMX -->
 <div id="vehiclesList">
     {% if vehicles %}
-        <!-- Карусель с автомобилями -->
-        <div id="garageCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
-            <!-- Индикаторы -->
-            <div class="carousel-indicators">
-                {% for vehicle in vehicles %}
-                    <button type="button" data-target="#garageCarousel" data-slide-to="{{ loop.index0 }}" 
-                        {% if loop.first %}class="active" aria-current="true"{% endif %} 
-                        aria-label="Vehicle {{ loop.index }}"></button>
-                {% endfor %}
-                <button type="button" data-target="#garageCarousel" data-slide-to="{{ vehicles|length }}" 
+    <!-- Карусель с автомобилями -->
+    <div id="garageCarousel" class="carousel slide">
+        <!-- Индикаторы -->
+        <div class="carousel-indicators">
+            {% for vehicle in vehicles %}
+            <button type="button" data-bs-target="#garageCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                    {% if loop.first %}class="active" aria-current="true" {% endif %}
+                    aria-label="Vehicle {{ loop.index }}"></button>
+            {% endfor %}
+            <button type="button" data-bs-target="#garageCarousel" data-bs-slide-to="{{ vehicles|length }}"
                     aria-label="Add Vehicle"></button>
-            </div>
-            
-            <div class="carousel-inner">
-                <!-- Слайды с автомобилями -->
-                {% for vehicle in vehicles %}
-                    <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <div class="row">
-                            <div class="col-md-8 mx-auto">
-                                {% include "vehicle_card.html" %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-                
-                <!-- Слайд для добавления автомобиля -->
-                <div class="carousel-item">
-                    <div class="row">
-                        <div class="col-md-8 mx-auto">
-                            {% include "add_vehicle_card.html" %}
-                        </div>
+        </div>
+
+        <div class="carousel-inner">
+            <!-- Слайды с автомобилями -->
+            {% for vehicle in vehicles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <div class="row">
+                    <div class="col-md-8 mx-auto">
+                        {% include "vehicle_card.html" %}
                     </div>
                 </div>
             </div>
-            
-            <!-- Кнопки навигации карусели -->
-            <a class="carousel-control-prev" href="#garageCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Предыдущий</span>
-            </a>
-            <a class="carousel-control-next" href="#garageCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Следующий</span>
-            </a>
+            {% endfor %}
+
+            <!-- Слайд для добавления автомобиля -->
+            <div class="carousel-item">
+                <div class="row">
+                    <div class="col-md-8 mx-auto">
+                        {% include "add_vehicle_card.html" %}
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Кнопки навигации карусели -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#garageCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Предыдущий</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#garageCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Следующий</span>
+        </button>
+    </div>
+
     {% else %}
-        <!-- Состояние пустого гаража -->
-        <div class="empty-garage">
-            <i class="fas fa-car empty-garage-icon"></i>
-            <h3>Ваш гараж пока пуст</h3>
-            <p class="lead text-muted">Добавьте свой первый автомобиль, чтобы начать отслеживать его обслуживание.</p>
-            <button class="btn btn-carmain btn-lg mt-3" data-toggle="modal" data-target="#addCarModal">
-                <i class="fas fa-plus-circle mr-2"></i> Добавить автомобиль
-            </button>
-        </div>
+    <!-- Состояние пустого гаража -->
+    <div class="empty-garage">
+        <i class="fas fa-car empty-garage-icon"></i>
+        <h3>Ваш гараж пока пуст</h3>
+        <p class="lead text-muted">Добавьте свой первый автомобиль, чтобы начать отслеживать его обслуживание.</p>
+        <button class="btn btn-carmain btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#addCarModal">
+            <i class="fas fa-plus-circle me-2"></i> Добавить автомобиль
+        </button>
+    </div>
     {% endif %}
 </div>

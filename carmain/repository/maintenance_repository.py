@@ -136,7 +136,7 @@ class MaintenanceRepository(BaseRepository):
         Получить элементы, требующие обслуживания для конкретного автомобиля.
         Возвращает кортеж (список элементов, общее количество)
         """
-        # Сначала получаем информацию о текущем пробеге автомобиля
+
         vehicle_query = select(Vehicle).where(
             and_(Vehicle.id == vehicle_id, Vehicle.user_id == user_id)
         )
@@ -148,7 +148,6 @@ class MaintenanceRepository(BaseRepository):
 
         current_odometer = vehicle.odometer
 
-        # Запрос для получения элементов, требующих обслуживания
         query = (
             select(UserMaintenanceItem)
             .where(
@@ -191,13 +190,10 @@ class MaintenanceRepository(BaseRepository):
             .options(joinedload(UserMaintenanceItem.maintenance_item))
         )
 
-        # Получаем общее количество элементов для пагинации
         count_query = select(func.count()).select_from(query.subquery())
         count_result = await self.session.execute(count_query)
         total_count = count_result.scalar_one()
 
-        # Добавляем пагинацию и сортировку
-        # Сначала просроченные, затем подходящие к сроку
         query = (
             query.order_by(
                 # Сначала никогда не обслуживаемые
