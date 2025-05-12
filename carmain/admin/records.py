@@ -3,12 +3,17 @@ from carmain.models.records import ServiceRecord
 
 
 class ServiceRecordAdmin(ModelView, model=ServiceRecord):
-    column_list = [ServiceRecord.id, "maintenance_item_name", "vehicle", "user", "service_date", "service_odometer"]
-    
-    # Определяем столбцы для фильтрации
+    column_list = [
+        ServiceRecord.id,
+        "maintenance_item_name",
+        "vehicle",
+        "user",
+        "service_date",
+        "service_odometer",
+    ]
+
     column_filters = [ServiceRecord.service_date, ServiceRecord.service_odometer]
-    
-    # Определяем поля поиска
+
     column_searchable_list = []
 
     @staticmethod

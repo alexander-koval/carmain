@@ -186,7 +186,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('htmx:afterSwap', function(event) {
-        // Добавляем эффект наведения на карточки после каждого обновления контента через HTMX
+
         let cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             if (!card.classList.contains('hover-initialized')) {

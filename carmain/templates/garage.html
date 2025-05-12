@@ -298,11 +298,11 @@
 <script>
     // Font Awesome уже подключен в базовом шаблоне
     
-    // Функция предзаполнения формы для редактирования
+
     function editVehicle(id, brand, model, year, odometer) {
         console.log('Editing vehicle:', id, brand, model, year, odometer);
         
-        // Заполняем форму редактирования текущими данными
+
         document.getElementById('edit_vehicle_id').value = id;
         document.getElementById('edit_brand').value = brand;
         document.getElementById('edit_model').value = model;
@@ -310,17 +310,17 @@
         document.getElementById('edit_year').value = year;
         document.getElementById('edit_odometer').value = odometer;
         
-        // Настраиваем кнопку обновления для этого автомобиля
+
         var updateBtn = document.getElementById('updateVehicleBtn');
         
-        // Удаляем предыдущий обработчик, если он был
+
         if (updateBtn._vehicleUpdateHandler) {
             updateBtn.removeEventListener('click', updateBtn._vehicleUpdateHandler);
         }
         
-        // Создаем новый обработчик для этого автомобиля
+
         updateBtn._vehicleUpdateHandler = function() {
-            // Собираем данные из формы
+
             const vehicleData = {
                 vehicle_id: id,
                 brand: brand,
@@ -331,7 +331,7 @@
             
             console.log('Updating vehicle with data:', vehicleData);
             
-            // Выполняем PATCH запрос через HTMX API
+
             htmx.ajax('PATCH', '/vehicles/' + id + '/update', {
                 target: '#vehicle-card-' + id,
                 swap: 'outerHTML',
@@ -341,79 +341,79 @@
                 }
             });
             
-            // Закрываем модальное окно (Bootstrap 5)
+
             const modal = bootstrap.Modal.getInstance(document.getElementById('editCarModal'));
             modal.hide();
         };
         
-        // Устанавливаем новый обработчик
+
         updateBtn.addEventListener('click', updateBtn._vehicleUpdateHandler);
         
         console.log('Update button configured for vehicle ID:', id);
     }
     
-    // Функция для сброса формы при добавлении нового автомобиля
+
     function resetVehicleForm() {
         console.log('Resetting form for new vehicle');
         
-        // Изменяем заголовок модального окна
+
         document.getElementById('addCarModalLabel').textContent = 'Добавить новый автомобиль';
         
-        // Очищаем форму
+
         document.getElementById('vehicle_id').value = '';
         document.getElementById('vehicleForm').reset();
         
-        // Удаляем атрибуты других HTTP-методов если они есть
+
         var form = document.getElementById('vehicleForm');
         form.removeAttribute('hx-patch');
         form.removeAttribute('hx-put');
         
-        // Устанавливаем метод POST для создания
+
         form.setAttribute('hx-post', '/api/v1/vehicles/create');
         console.log('Form configured for create:', form.getAttribute('hx-post'));
     }
     
-    // Инициализация карусели и обработчиков событий
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Инициализация карусели Bootstrap 5
+
         var carouselElement = document.getElementById('garageCarousel');
         if (carouselElement) {
             var carousel = new bootstrap.Carousel(carouselElement, {
-                interval: false, // Отключаем автоматическую прокрутку
-                keyboard: true,  // Разрешаем управление клавиатурой
-                pause: 'hover'   // Пауза при наведении
+                interval: false,
+                keyboard: true,
+                pause: 'hover'
             });
         }
 
-        // Отслеживаем отправку формы для динамического определения типа операции
+
         var vehicleForm = document.getElementById('vehicleForm');
         if (vehicleForm) {
             vehicleForm.addEventListener('submit', function(event) {
-                // Автоматически выбираем правильный метод и URL на основе содержимого поля vehicle_id
+
                 var vehicleId = document.getElementById('vehicle_id').value;
                 
-                // Удаляем все предыдущие настройки HTTP методов
+
                 this.removeAttribute('hx-post');
                 this.removeAttribute('hx-patch');
                 this.removeAttribute('hx-put');
                 
                 if (vehicleId) {
-                    // Редактирование - устанавливаем PATCH запрос
+
                     this.setAttribute('hx-patch', '/api/v1/vehicles/' + vehicleId + '/update');
                     console.log('Form submitted for update, ID:', vehicleId);
                 } else {
-                    // Создание - устанавливаем POST запрос
+
                     this.setAttribute('hx-post', '/api/v1/vehicles/create');
                     console.log('Form submitted for create');
                 }
             });
         }
         
-        // Модальные окна в Bootstrap 5
+
         var addCarModal = document.getElementById('addCarModal');
         if (addCarModal) {
             addCarModal.addEventListener('show.bs.modal', function(event) {
-                // Если модальное окно было вызвано кнопкой добавления, сбрасываем форму
+
                 var button = event.relatedTarget;
                 if (button && !button.classList.contains('edit-btn') && 
                     button.closest('.add-car-card')) {

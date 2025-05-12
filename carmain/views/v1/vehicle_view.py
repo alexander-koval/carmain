@@ -21,9 +21,7 @@ templates = Jinja2Templates(directory="carmain/templates")
 
 
 @vehicle_router.get("/")
-async def list_vehicles(
-    request: Request, vehicle_service: VehicleService = Depends()
-):
+async def list_vehicles(request: Request, vehicle_service: VehicleService = Depends()):
     """Возвращает HTML-фрагмент со списком автомобилей пользователя"""
     vehicles = await vehicle_service.get_user_vehicles()
     return templates.TemplateResponse(
@@ -55,23 +53,18 @@ async def create(
     try:
         year_date = datetime.date.fromisoformat(year)
         vehicle_data = VehicleCreate(
-            brand=brand,
-            model=model,
-            year=year_date,
-            odometer=odometer,
-            user_id=user.id
+            brand=brand, model=model, year=year_date, odometer=odometer, user_id=user.id
         )
-        
+
         await vehicle_service.add(vehicle_data)
-        
-        # Возвращаем редирект для полного обновления страницы
+
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         return templates.TemplateResponse(
             request=request,
             name="error_partial.html",
             context={"error": f"Ошибка при создании автомобиля: {str(e)}"},
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -89,25 +82,20 @@ async def update(
     try:
         year_date = datetime.date.fromisoformat(year)
         vehicle_data = VehicleUpdate(
-            brand=brand,
-            model=model,
-            year=year_date,
-            odometer=odometer
+            brand=brand, model=model, year=year_date, odometer=odometer
         )
-        
-        # Обновляем данные автомобиля
+
         updated_vehicle = await vehicle_service.patch(obj_id, vehicle_data)
-        
-        # Возвращаем только обновленную карточку автомобиля
+
         return templates.TemplateResponse(
             request=request,
             name="vehicle_card.html",
-            context={"vehicle": updated_vehicle}
+            context={"vehicle": updated_vehicle},
         )
     except Exception as e:
         return templates.TemplateResponse(
             request=request,
             name="error_partial.html",
             context={"error": f"Ошибка при обновлении автомобиля: {str(e)}"},
-            status_code=status.HTTP_400_BAD_REQUEST
+            status_code=status.HTTP_400_BAD_REQUEST,
         )

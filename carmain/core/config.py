@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # from loguru import logger
 # import sys
 #
-# # Настройка loguru
+#
 # logger.remove()
 # logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
 
