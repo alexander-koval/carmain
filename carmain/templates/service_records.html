@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}История обслуживания {{ maintenance_item.name }} - Carmain{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Гараж</a></li>
+            <li class="breadcrumb-item"><a href="/vehicles/{{ vehicle.id }}/maintenance">Обслуживание</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ maintenance_item.name }}</li>
+        </ol>
+    </nav>
+
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center" style="column-gap: 0.75rem;">
+                <i class="fas fa-{{ icon }} fa-2x text-warning"></i>
+                <div>
+                    <h4 class="mb-1">{{ maintenance_item.name }}</h4>
+                    <div class="text-muted">
+                        <span style="margin-right: 0.75rem;">Интервал: {{ item.custom_interval or maintenance_item.default_interval }} км</span>
+                        <span>Автомобиль: {{ vehicle.brand }} {{ vehicle.model }}</span>
+                    </div>
+                </div>
+                <a href="/vehicles/{{ vehicle.id }}/maintenance" 
+                   hx-target="body" 
+                   class="btn btn-outline-secondary btn-sm ms-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Вернуться к обслуживанию
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">История обслуживания</h5>
+        <button class="btn btn-carmain btn-sm"
+                data-bs-toggle="modal" 
+                data-bs-target="#serviceModal"
+                @click="$dispatch('open-service-modal', {
+                  id: 'history-{{ item.id }}', 
+                  name: '{{ maintenance_item.name }}',
+                  vehicle_id: '{{ vehicle.id }}',
+                  date: '{{ today }}',
+                  odometer: {{ vehicle.odometer if vehicle.odometer else 0 }}
+                })">
+            <i class="fas fa-plus-circle me-1"></i> Отметить новое обслуживание
+        </button>
+    </div>
+    
+
+    <div id="service-records-container">
+        {% include "service_records_list.html" %}
+    </div>
+</div>
+{% endblock %}
