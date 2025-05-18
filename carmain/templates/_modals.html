@@ -1,6 +1,3 @@
-
-
-<!-- Modal для отметки обслуживания -->
 <div class="modal fade"
      id="serviceModal"
      tabindex="-1"
@@ -13,7 +10,7 @@
          serviceDate: null,
          serviceOdometer: 0,
          serviceComment: '',
-         servicePhoto: null,
+         servicePhoto: null
      }"
      @open-service-modal.window="
          itemId = $event.detail.id;
@@ -46,7 +43,7 @@
          $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-success bg-opacity-25">
                 <h5 class="modal-title" id="serviceModalLabel">Подтверждение обслуживания</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -91,3 +88,90 @@
     </div>
 </div>
 
+<div class="modal fade"
+     id="editServiceRecordModal"
+     tabindex="-1"
+     aria-labelledby="editServiceRecordModalLabel"
+     aria-hidden="true"
+     x-data="{
+         recordId: null,
+         itemName: '',
+         vehicleId: null,
+         serviceDate: null,
+         serviceOdometer: 0,
+         serviceComment: ''
+     }"
+     @open-edit-record-modal.window="
+         recordId = $event.detail.id;
+         itemName = $event.detail.name;
+         vehicleId = $event.detail.vehicle_id;
+         $root.querySelector('#editServiceRecordModalLabel').textContent = 'Редактирование: ' + itemName;
+         serviceDate = $event.detail.date || '';
+         serviceOdometer = $event.detail.odometer || 0;
+         serviceComment = $event.detail.comment || '';
+     "
+     x-on:htmx:after-settle.window="function() {
+          const detail = $event.detail;
+          if (detail.elt && 
+              detail.elt.id === 'service-records-container' && 
+              detail.xhr.status >= 200 && detail.xhr.status < 300) {
+              console.log('HTMX request successful, attempting to close edit modal.');
+              const modalEl = document.getElementById('editServiceRecordModal');
+              if (modalEl && typeof bootstrap !== 'undefined') {
+                  const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                  if (modalInstance) {
+                      modalInstance.hide();
+                  }
+              }
+          }
+      }"
+     @hidden.bs.modal="
+         recordId = null;
+         itemName = '';
+         vehicleId = null;
+         serviceDate = null;
+         serviceOdometer = 0;
+         serviceComment = '';
+         $root.querySelector('#editServiceRecordModalLabel').textContent = 'Редактирование записи';">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning bg-opacity-25">
+                <h5 class="modal-title" id="editServiceRecordModalLabel">Редактирование записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editServiceRecordForm" 
+                      x-bind:hx-post="'/service-records/' + recordId + '/update'" 
+                      x-bind:hx-target="'#service-records-container'"
+                      hx-swap="outerHTML" 
+                      hx-encoding="multipart/form-data">
+                    <input type="hidden" name="record_id" x-bind:value="recordId">
+                    <input type="hidden" name="vehicle_id" x-bind:value="vehicleId">
+                    <div class="mb-3">
+                        <label for="editServiceDate" class="form-label">Дата обслуживания</label>
+                        <input type="date" class="form-control" id="editServiceDate" name="service_date"
+                               x-model="serviceDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editServiceOdometer" class="form-label">Показание одометра (км)</label>
+                        <input type="number" class="form-control" id="editServiceOdometer" name="service_odometer"
+                               x-model="serviceOdometer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editServiceComment" class="form-label">Комментарий</label>
+                        <textarea class="form-control" id="editServiceComment" name="service_comment"
+                                rows="3" x-model="serviceComment"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" form="editServiceRecordForm" class="btn btn-warning"
+                        hx-indicator="#edit-submit-indicator">
+                    <span id="edit-submit-indicator" class="spinner-border spinner-border-sm htmx-indicator me-1" role="status"></span>
+                    Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
