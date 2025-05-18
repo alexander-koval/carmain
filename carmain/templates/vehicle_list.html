@@ -1,9 +1,9 @@
-<!-- Список автомобилей для загрузки через HTMX -->
+
 <div id="vehiclesList">
     {% if vehicles %}
-    <!-- Карусель с автомобилями -->
+
     <div id="garageCarousel" class="carousel slide">
-        <!-- Индикаторы -->
+
         <div class="carousel-indicators">
             {% for vehicle in vehicles %}
             <button type="button" data-bs-target="#garageCarousel" data-bs-slide-to="{{ loop.index0 }}"
@@ -15,7 +15,7 @@
         </div>
 
         <div class="carousel-inner">
-            <!-- Слайды с автомобилями -->
+
             {% for vehicle in vehicles %}
             <div class="carousel-item {% if loop.first %}active{% endif %}">
                 <div class="row">
@@ -26,7 +26,7 @@
             </div>
             {% endfor %}
 
-            <!-- Слайд для добавления автомобиля -->
+
             <div class="carousel-item">
                 <div class="row">
                     <div class="col-md-8 mx-auto">
@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <!-- Кнопки навигации карусели -->
+
         <button class="carousel-control-prev" type="button" data-bs-target="#garageCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Предыдущий</span>
@@ -48,7 +48,7 @@
     </div>
 
     {% else %}
-    <!-- Состояние пустого гаража -->
+
     <div class="empty-garage">
         <i class="fas fa-car empty-garage-icon"></i>
         <h3>Ваш гараж пока пуст</h3>

@@ -71,10 +71,10 @@
         }
     </style>
 
-    <!-- Карусель с автомобилями и формой добавления -->
+
     <div class="row">
         {% if vehicles %}
-        <!-- Кнопка "Предыдущий" (вне карусели) -->
+
         <div class="col-md-1 d-flex align-items-center justify-content-end">
             <button class="btn btn-car-primary rounded-circle p-2" type="button" data-target="#vehiclesCarousel" data-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -83,24 +83,24 @@
         </div>
         {% endif %}
         
-        <!-- Карусель -->
+
         <div class="col-md-{% if vehicles %}10{% else %}12{% endif %}">
             <div id="vehiclesCarousel" class="carousel slide mb-4">
-                <!-- Индикаторы слайдов -->
+
                 <div class="carousel-indicators">
                     {% for vehicle in vehicles %}
                         <button type="button" data-target="#vehiclesCarousel" data-slide-to="{{ loop.index0 }}" 
                             {% if loop.first %}class="active" aria-current="true"{% endif %} 
                             aria-label="Vehicle {{ loop.index }}"></button>
                     {% endfor %}
-                    <!-- Индикатор для формы добавления -->
+
                     <button type="button" data-target="#vehiclesCarousel" data-slide-to="{{ vehicles|length }}" 
                         {% if not vehicles %}class="active" aria-current="true"{% endif %}
                         aria-label="Add Vehicle"></button>
                 </div>
                 
                 <div class="carousel-inner">
-                    <!-- Слайды с автомобилями -->
+
                     {% for vehicle in vehicles %}
                         <div class="carousel-item {% if loop.first %}active{% endif %}">
                             <div class="card text-center">
@@ -126,7 +126,7 @@
                         </div>
                     {% endfor %}
                     
-                    <!-- Слайд с формой добавления -->
+
                     <div class="carousel-item {% if not vehicles %}active{% endif %}">
                         <div class="card text-center">
                             <div class="card-header">
@@ -161,7 +161,7 @@
         </div>
         
         {% if vehicles %}
-        <!-- Кнопка "Следующий" (вне карусели) -->
+
         <div class="col-md-1 d-flex align-items-center">
             <button class="btn btn-car-primary rounded-circle p-2" type="button" data-target="#vehiclesCarousel" data-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>

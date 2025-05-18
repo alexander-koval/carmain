@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Шапка -->
+
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2>Детали, требующие обслуживания</h2>
         {% if user_vehicles|length > 1 %}
@@ -32,7 +32,7 @@
         {% endif %}
     </div>
 
-    <!-- Информация о транспортном средстве -->
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center" style="column-gap: 0.75rem;">
@@ -51,91 +51,9 @@
         </div>
     </div>
 
-    <!-- Контейнер для списка или пустого состояния -->
+
     {% include "maintenance_items_list.html" %}
-
-        <!-- Modal для подтверждения обслуживания (Bootstrap 5) -->
-    <div class="modal fade"
-         id="serviceModal"
-         tabindex="-1"
-         aria-labelledby="serviceModalLabel"
-         aria-hidden="true"
-         x-data="{
-                             itemId: null,
-                             itemName: '',
-                             vehicleId: '{{ vehicle.id }}',
-                             serviceDate: '{{ today }}',
-                             serviceOdometer: {{ vehicle.odometer if vehicle.odometer else 'null' }},
-                             serviceComment: '',
-                             servicePhoto: null,
-                         }"
-         @open-service-modal.window="
-                             itemId = $event.detail.id;
-                             itemName = $event.detail.name;
-                             $root.querySelector('.modal-title').textContent = 'Подтверждение: ' + itemName;
-                             serviceDate = '{{ today }}';
-                             serviceOdometer = {{ vehicle.odometer if vehicle.odometer else 'null' }};
-                             serviceComment = '';
-                             if ($refs.servicePhotoInput) $refs.servicePhotoInput.value = null;
-                         "
-         x-on:htmx:after-settle.window="
-              if ($event.detail.elt.id === 'maintenance-items-list' && $event.detail.xhr.status >= 200 && $event.detail.xhr.status < 300) {
-                  console.log('HTMX request successful, attempting to close modal.');
-                  var modalEl = document.getElementById('serviceModal');
-                  if (modalEl && typeof bootstrap !== 'undefined') {
-                      var modalInstance = bootstrap.Modal.getInstance(modalEl);
-                      if (modalInstance) {
-                          modalInstance.hide();
-                      }
-                  }
-              }"
-         @hidden.bs.modal="
-                             itemId = null;
-                             itemName = '';
-                             $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="serviceModalLabel">Подтверждение обслуживания</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="serviceForm" hx-post="/vehicles/{{ vehicle.id }}/maintenance" hx-target="#maintenance-items-list"
-                          hx-swap="outerHTML"  hx-encoding="multipart/form-data">
-
-                        <input type="hidden" name="user_item_id" :value="itemId">
-                        <div class="mb-3">
-                            <label for="serviceDate" class="form-label">Период обслуживания</label>
-                            <input type="date" class="form-control" id="serviceDate" name="service_date"
-                                   value="{{ today }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="serviceOdometer" class="form-label">Показание одометра (км)</label>
-                            <input type="number" class="form-control" id="serviceOdometer" name="service_odometer"
-                                   value="{{ vehicle.odometer }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="serviceComment" class="form-label">Комментарий</label>
-                            <textarea class="form-control" id="serviceComment" name="service_comment"
-                                      rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="servicePhoto" class="form-label">Фото</label>
-                            <input type="file" class="form-control" id="servicePhoto" name="service_photo">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" form="serviceForm" class="btn btn-success">Обслужено</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
-
-
 
 <style>
     /* Стили для карточек */
@@ -186,7 +104,6 @@
 {% block scripts %}
 <script>
     document.addEventListener('htmx:afterSwap', function(event) {
-
         let cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             if (!card.classList.contains('hover-initialized')) {

@@ -63,7 +63,7 @@
                 font-weight: 500;
             }
             
-            /* Кнопки */
+
             .btn-carmain {
                 background-color: #ffe216;
                 border-color: #e6b800;
@@ -90,7 +90,7 @@
                 opacity: 0.7;
             }
             
-            /* Карточка добавления */
+
             .add-car-card {
                 border: 2px dashed #ffe216;
                 background-color: #fffceb;
@@ -146,7 +146,7 @@
                 }
             }
 
-            /* Значки обслуживания */
+
             .maintenance-badge {
                 display: inline-block;
                 padding: 0.25rem 0.5rem;
@@ -185,9 +185,9 @@
             }
         </style>
 
-        <!-- Список автомобилей, который можно обновлять через HTMX -->
+
         <div id="vehiclesContainer" hx-get="/vehicles/" hx-trigger="load" hx-swap="innerHTML">
-            <!-- Здесь будет загружен список автомобилей через HTMX -->
+
             <div class="text-center py-4">
                 <div class="spinner-border text-warning" role="status">
                     <span class="sr-only">Загрузка...</span>
@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования автомобиля -->
+
     <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -233,7 +233,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно для редактирования автомобиля -->
+
     <div class="modal fade" id="editCarModal" tabindex="-1" aria-labelledby="editCarModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -273,7 +273,7 @@
         </div>
     </div>
     
-    <!-- Модальное окно подтверждения удаления -->
+
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">

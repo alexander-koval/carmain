@@ -1,5 +1,5 @@
 // maintenance-directory.js
-// Скрипты для страницы Справочник работ
+
 
 // Функция показа Bootstrap Toast уведомления
 function showToast(title, message, type = 'success') {
@@ -22,7 +22,7 @@ function showToast(title, message, type = 'success') {
     toastElement.toast('show');
 }
 
-// Обработка успешных HTMX-запросов
+
 document.body.addEventListener('htmx:afterRequest', function(event) {
     const xhr = event.detail.xhr;
     const operationStatus = xhr.getResponseHeader('X-Operation-Status');
@@ -38,7 +38,7 @@ document.body.addEventListener('htmx:afterRequest', function(event) {
     }
 });
 
-// Обработка ошибок HTMX
+
 document.body.addEventListener('htmx:responseError', function(event) {
     console.error('HTMX Response Error:', event.detail.error);
     const xhr = event.detail.xhr;
@@ -46,4 +46,3 @@ document.body.addEventListener('htmx:responseError', function(event) {
     showToast('Ошибка запроса', errorMessage, 'error');
 });
 
-// Дополнительная логика фильтров/поиска может быть добавлена здесь, если требуется

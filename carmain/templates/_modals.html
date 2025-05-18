@@ -1,0 +1,93 @@
+
+
+<!-- Modal для отметки обслуживания -->
+<div class="modal fade"
+     id="serviceModal"
+     tabindex="-1"
+     aria-labelledby="serviceModalLabel"
+     aria-hidden="true"
+     x-data="{
+         itemId: null,
+         itemName: '',
+         vehicleId: null,
+         serviceDate: null,
+         serviceOdometer: 0,
+         serviceComment: '',
+         servicePhoto: null,
+     }"
+     @open-service-modal.window="
+         itemId = $event.detail.id;
+         itemName = $event.detail.name;
+         vehicleId = $event.detail.vehicle_id;
+         $root.querySelector('.modal-title').textContent = 'Подтверждение: ' + itemName;
+         serviceDate = $event.detail.date || '{{ today if today is defined else '' }}';
+         serviceOdometer = $event.detail.odometer || {{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }};
+         serviceComment = '';
+         if ($refs.servicePhotoInput) $refs.servicePhotoInput.value = null;
+     "
+     x-on:htmx:after-settle.window="function() {
+          const detail = $event.detail;
+          if (detail.elt && 
+              (detail.elt.id === 'maintenance-items-list' || detail.elt.id === 'service-records-container') && 
+              detail.xhr.status >= 200 && detail.xhr.status < 300) {
+              console.log('HTMX request successful, attempting to close modal.');
+              const modalEl = document.getElementById('serviceModal');
+              if (modalEl && typeof bootstrap !== 'undefined') {
+                  const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                  if (modalInstance) {
+                      modalInstance.hide();
+                  }
+              }
+          }
+      }"
+     @hidden.bs.modal="
+         itemId = null;
+         itemName = '';
+         $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="serviceModalLabel">Подтверждение обслуживания</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="serviceForm" 
+                      x-bind:hx-post="'/vehicles/' + vehicleId + '/maintenance'" 
+                      x-bind:hx-target="itemId && itemId.startsWith('history-') ? '#service-records-container' : '#maintenance-items-list'"
+                      hx-swap="outerHTML" 
+                      hx-encoding="multipart/form-data">
+                    <input type="hidden" name="user_item_id" x-bind:value="itemId">
+                    <input type="hidden" name="vehicle_id" x-bind:value="vehicleId">
+                    <div class="mb-3">
+                        <label for="serviceDate" class="form-label">Дата обслуживания</label>
+                        <input type="date" class="form-control" id="serviceDate" name="service_date"
+                               x-model="serviceDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="serviceOdometer" class="form-label">Показание одометра (км)</label>
+                        <input type="number" class="form-control" id="serviceOdometer" name="service_odometer"
+                               x-model="serviceOdometer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="serviceComment" class="form-label">Комментарий</label>
+                        <textarea class="form-control" id="serviceComment" name="service_comment"
+                                rows="3" x-model="serviceComment"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="servicePhoto" class="form-label">Фото</label>
+                        <input type="file" class="form-control" id="servicePhoto" name="service_photo" x-ref="servicePhotoInput">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" form="serviceForm" class="btn btn-success"
+                        hx-indicator="#submit-indicator">
+                    <span id="submit-indicator" class="spinner-border spinner-border-sm htmx-indicator me-1" role="status"></span>
+                    Обслужено
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
