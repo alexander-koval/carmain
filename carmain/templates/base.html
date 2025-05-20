@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Website{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <script defer src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <!-- Bootstrap 5 JS и Popper (без jQuery) -->
+<!--    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>-->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Alpine.js -->
+<!--    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js"></script>-->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 
 <!--    <script src="https://unpkg.com/htmx.org@1.9.2"></script>-->
     <!-- HTMX расширения -->
@@ -37,7 +46,6 @@
             <h1 class="mb-0">Carmain</h1>
         </div>
     </header>
-
     <div class="container mt-4">
         {% block content %}
         <!-- Main content goes here -->
@@ -47,73 +55,10 @@
 
     {% include '_modals.html' %}
 
-    <!-- Bootstrap 5 JS и Popper (без jQuery) -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Alpine.js -->
-<!--    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js"></script>-->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // HTMX расширения
             console.log('HTMX extensions initialized');
-        });
-
-        document.addEventListener('htmx:beforeSwap', function(event) {
-            if (event.detail.target === document.body && event.detail.xhr && event.detail.pathInfo.requestPath !== event.detail.pathInfo.path) {
-                console.log("HTMX:beforeSwap - body will be replaced. Hiding active modals (if any).");
-                const modalElement = document.getElementById('serviceModal');
-                if (modalElement) {
-                    const instance = bootstrap.Modal.getInstance(modalElement);
-                    if (instance && instance._isShown) {
-                        // Не вызываем hide() здесь, если Alpine.js уже его вызвал
-                        // или если мы хотим, чтобы Bootstrap сам закрылся при удалении.
-                        // Однако, если hx-boost удаляет body ДО того, как Alpine/Bootstrap успели,
-                        // то может потребоваться принудительное скрытие.
-                        // Этот блок можно закомментировать и посмотреть, как работает без него.
-                        // instance.hide();
-                    }
-                }
-                // Агрессивная очистка подложек и стилей body при полной замене
-                document.querySelectorAll('.modal-backdrop.fade.show').forEach(backdrop => backdrop.remove());
-                document.body.classList.remove('modal-open');
-                document.body.style.paddingRight = '';
-                document.body.style.overflow = '';
-            }
-        });
-
-        document.body.addEventListener('htmx:afterSettle', function() {
-            setTimeout(() => {
-                const openModalsCount = document.querySelectorAll('.modal.show').length;
-                const backdrops = document.querySelectorAll('.modal-backdrop.fade.show');
-
-                if (backdrops.length > openModalsCount) {
-                    console.warn(`HTMX:afterSettle - Excess backdrops (${backdrops.length}). Removing extras.`);
-                    while (document.querySelectorAll('.modal-backdrop.fade.show').length > openModalsCount && openModalsCount >= 0) {
-                        let lastBackdrop = document.querySelector('.modal-backdrop.fade.show:last-of-type');
-                        if (lastBackdrop) lastBackdrop.remove(); else break;
-                    }
-                }
-                if (document.querySelectorAll('.modal.show').length === 0 && document.body.classList.contains('modal-open')) {
-                    console.warn("HTMX:afterSettle - No modals open, but body is .modal-open. Cleaning.");
-                    document.body.classList.remove('modal-open');
-                    document.body.style.paddingRight = '';
-                    document.body.style.overflow = '';
-                }
-            }, 200);
-        });
-
-        window.addEventListener('beforeunload', () => {
-            console.log("Window:beforeunload - Aggressively cleaning modals/backdrops.");
-            // Не пытаемся тут hide(), т.к. Alpine может уже пытаться/успел.
-
-            document.querySelectorAll('.modal-backdrop.fade.show').forEach(backdrop => backdrop.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.paddingRight = '';
-            document.body.style.overflow = '';
         });
     </script>
     
