@@ -223,10 +223,10 @@ async def all_maintenance_items_view(
             }
         )
 
-    is_htmx = request.headers.get("HX-Request") == "true"
+    # is_htmx = request.headers.get("HX-Request") == "true"
     context = {"request": request, "vehicle_id": vehicle_id, "maintenance_items": items}
-    if is_htmx:
-        return templates.TemplateResponse("maintenance_directory_list.html", context)
+    # if is_htmx:
+    #     return templates.TemplateResponse("maintenance_directory_list.html", context)
     return templates.TemplateResponse("maintenance_directory.html", context)
 
 
