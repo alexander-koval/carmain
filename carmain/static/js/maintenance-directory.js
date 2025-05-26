@@ -3,23 +3,24 @@
 
 // Функция показа Bootstrap Toast уведомления
 function showToast(title, message, type = 'success') {
-    const toastElement = $('#notificationToast');
-    const toastTitle = $('#toastTitle');
-    const toastBody = $('#toastBody');
+    const toastElement = document.getElementById('notificationToast');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastBody = document.getElementById('toastBody');
 
-    toastTitle.text(title);
-    toastBody.text(message);
+    toastTitle.textContent = title;
+    toastBody.textContent = message;
 
     // Сброс кастомных классов (если используются)
-    toastElement.removeClass('toast-success toast-error');
+    toastElement.classList.remove('toast-success', 'toast-error');
     if (type === 'success') {
-        // toastElement.addClass('toast-success');
+        // toastElement.classList.add('toast-success');
     } else if (type === 'error') {
-        // toastElement.addClass('toast-error');
-        toastTitle.text('Ошибка');
+        // toastElement.classList.add('toast-error');
+        toastTitle.textContent = 'Ошибка';
     }
 
-    toastElement.toast('show');
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
 }
 
 
