@@ -118,16 +118,14 @@ async def mark_item_as_serviced(
     Отметить деталь как обслуженную
     """
     item = await maintenance_service.mark_item_as_serviced(service_record_create)
-    
 
     referer = request.headers.get("Referer", "")
-    
 
     if f"/vehicles/{vehicle_id}/maintenance-items/{item.id}" in referer:
 
         records = await maintenance_service.get_service_records(item.id)
         sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
-        
+
         return templates.TemplateResponse(
             "service_records_list.html",
             {
@@ -138,7 +136,6 @@ async def mark_item_as_serviced(
                 "records": sorted_records,
             },
         )
-    
 
     maintenance_items, pagination = (
         await maintenance_service.get_items_requiring_service(
@@ -296,10 +293,10 @@ async def untrack_maintenance_item(
     vehicle = await maintenance_service.get_vehicle(vehicle_id)
     if not vehicle or vehicle.user_id != maintenance_service.user.id:
         raise HTTPException(status_code=404, detail="Автомобиль не найден")
-    umi = await maintenance_service.get_user_maintenance_item(item_id)
+    umi = await maintenance_service.get_user_maintenance_item_by_item_id(item_id)
     if not umi or umi.vehicle_id != vehicle_id:
         raise HTTPException(status_code=404, detail="Элемент не отслеживается")
-    await maintenance_service.delete_user_maintenance_item(item_id)
+    await maintenance_service.delete_user_maintenance_item(umi.id)
     mi = await maintenance_service.get_maintenance_item(item_id)
     if not mi:
         raise HTTPException(status_code=404, detail="Работа не найдена")
@@ -333,18 +330,23 @@ async def untrack_maintenance_item(
 async def service_record_history_view(
     request: Request,
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
-    item_id: Annotated[uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")],
+    item_id: Annotated[
+        uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
+    ],
     maintenance_service: Annotated[MaintenanceService, Depends()],
 ):
     """
     Отображение истории обслуживания для конкретной детали
     """
     item = await maintenance_service.get_user_maintenance_item(item_id)
-    if not item or item.vehicle_id != vehicle_id or item.user_id != maintenance_service.user.id:
+    if (
+        not item
+        or item.vehicle_id != vehicle_id
+        or item.user_id != maintenance_service.user.id
+    ):
         raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
-        
+
     records = await maintenance_service.get_service_records(item_id)
-    
 
     name_lower = item.maintenance_item.name.lower()
     if "масл" in name_lower or "oil" in name_lower:
@@ -359,13 +361,11 @@ async def service_record_history_view(
         icon = "car-battery"
     else:
         icon = "wrench"
-    
 
     sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
-    
 
     today = date.today().isoformat()
-    
+
     return templates.TemplateResponse(
         "service_records.html",
         {
@@ -379,6 +379,7 @@ async def service_record_history_view(
             "today": today,
         },
     )
+
 
 @router.get("/{vehicle_id}/add-maintenance-item")
 async def add_maintenance_item_view(

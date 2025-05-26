@@ -2,6 +2,8 @@ import uuid
 from datetime import date
 from typing import List, Optional, Tuple, Annotated
 from collections.abc import Sequence
+
+from dns.resolver import query
 from fastapi import Depends
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,6 +33,19 @@ class UserMaintenanceRepository(BaseRepository):
         if not result:
             raise NotFoundError(detail=f"not found for vehicle_id : {vehicle_id}")
         return result.unique().all()
+
+    async def get_by_item_id(
+        self, item_id: uuid.UUID, skip=0, limit=10, eager=False
+    ) -> UserMaintenanceItem:
+        query = select(self.model).where(UserMaintenanceItem.item_id == item_id)
+        if eager:
+            for eager in getattr(self.model, "eagers", []):
+                query = query.options(joinedload(getattr(self.model, eager)))
+        query = query.offset(skip).limit(limit)
+        result = await self.session.scalar(query)
+        if not result:
+            raise NotFoundError(detail=f"not found for vehicle_id : {item_id}")
+        return result
 
 
 class MaintenanceRepository(BaseRepository):

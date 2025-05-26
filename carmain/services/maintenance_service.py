@@ -85,6 +85,12 @@ class MaintenanceService(BaseService):
         """Получить элемент обслуживания пользователя по ID"""
         return await self.user_maintenance_repository.get_by_id(item_id, eager=True)
 
+    async def get_user_maintenance_item_by_item_id(self, item_id: uuid.UUID):
+        """Получить элемент обслуживания пользователя по Maintenance ID"""
+        return await self.user_maintenance_repository.get_by_item_id(
+            item_id, eager=True
+        )
+
     async def create_user_maintenance_item(
         self, item_data: Dict[str, Any]
     ) -> UserMaintenanceItem:
