@@ -8,6 +8,23 @@
     <h1 class="mb-2">Справочник работ</h1>
     <p class="text-muted mb-4">Здесь представлены все доступные виды сервисных работ. Вы можете отметить те, которые хотите отслеживать.</p>
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center" style="column-gap: 0.75rem;">
+                <i class="fas fa-list-ul fa-2x text-warning"></i>
+                <div>
+                    <h5 class="mb-1">Выбор работ для отслеживания</h5>
+                    <div class="text-muted">
+                        Отметьте работы, которые хотите отслеживать для вашего автомобиля
+                    </div>
+                </div>
+                <a href="/vehicles/{{ vehicle_id }}/maintenance" class="btn btn-outline-secondary btn-sm ms-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Вернуться к обслуживанию
+                </a>
+            </div>
+        </div>
+    </div>
+
 
     <form id="filtersForm"
           hx-get="/vehicles/{{ vehicle_id }}/all-maintenance-items"
