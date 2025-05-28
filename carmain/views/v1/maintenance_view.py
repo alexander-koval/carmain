@@ -53,6 +53,7 @@ async def maintenance_items_view(
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
     maintenance_service: Annotated[MaintenanceService, Depends()],
     page: int = Query(1, ge=1),
+    show_all: bool = False,
 ):
     """
     Отображение деталей, требующих обслуживания для конкретного автомобиля
@@ -65,9 +66,7 @@ async def maintenance_items_view(
 
     maintenance_items, pagination = (
         await maintenance_service.get_items_requiring_service(
-            vehicle_id=vehicle_id,
-            page=page,
-            page_size=10,
+            vehicle_id=vehicle_id, page=page, page_size=10, show_all=show_all
         )
     )
 
@@ -78,19 +77,21 @@ async def maintenance_items_view(
         total_items=pagination["total_items"],
     )
 
-    # is_htmx_request = request.headers.get("HX-Request") == "true"
-    #
-    # if is_htmx_request:
-    #     return templates.TemplateResponse(
-    #         "maintenance_items_list.html",
-    #         {
-    #             "request": request,
-    #             "vehicle": vehicle,
-    #             "maintenance_items": maintenance_items,
-    #             "pagination": pagination_params,
-    #             "today": date.today().isoformat(),
-    #         },
-    #     )
+    is_htmx_request = request.headers.get("HX-Request") == "true"
+    is_item_list_target = (
+        is_htmx_request and request.headers.get("HX-Target") == "maintenance-items-list"
+    )
+    if is_item_list_target:
+        return templates.TemplateResponse(
+            "maintenance_items_list.html",
+            {
+                "request": request,
+                "vehicle": vehicle,
+                "maintenance_items": maintenance_items,
+                "pagination": pagination_params,
+                "today": date.today().isoformat(),
+            },
+        )
 
     return templates.TemplateResponse(
         "maintenance_items.html",

@@ -175,21 +175,35 @@ class MaintenanceService(BaseService):
         return db_item
 
     async def get_items_requiring_service(
-        self, vehicle_id: uuid.UUID, page: int = 1, page_size: int = 10
+        self,
+        vehicle_id: uuid.UUID,
+        page: int = 1,
+        page_size: int = 10,
+        show_all: bool = False,
     ) -> Tuple[List[MaintenanceItemDisplay], Dict[str, int]]:
         """
         Получить элементы, требующие обслуживания для конкретного автомобиля.
         Возвращает список элементов в формате отображения и информацию о пагинации.
+
+        Args:
+            vehicle_id: ID автомобиля
+            page: Номер страницы (по умолчанию 1)
+            page_size: Размер страницы (по умолчанию 10)
+            show_all: Показать все элементы, включая не требующие обслуживания (по умолчанию False)
         """
 
         skip = (page - 1) * page_size
         limit = page_size
 
-        items, total_count = (
-            await self.maintenance_repository.get_maintenance_items_requiring_service(
+        if not show_all:
+            items = await self.maintenance_repository.get_maintenance_items_requiring_service(
                 self.user.id, vehicle_id, skip, limit
             )
-        )
+        else:
+            items = await self.maintenance_repository.get_user_maintenance_items(
+                self.user.id, vehicle_id, skip, limit
+            )
+        total_count = len(items)
 
         vehicle = await self.vehicle_repository.get_vehicle(vehicle_id)
         if not vehicle:
@@ -226,7 +240,10 @@ class MaintenanceService(BaseService):
                     remaining_km = interval - km_since_last_service
                 else:
                     # Элемент не требует обслуживания в ближайшее время
-                    continue
+                    if not show_all:
+                        continue
+                    overdue_km = None
+                    remaining_km = interval - km_since_last_service
 
             item_type = MaintenanceItemType.OTHER
             item_name = item.maintenance_item.name.lower()

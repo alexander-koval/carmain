@@ -134,7 +134,9 @@ class MaintenanceRepository(BaseRepository):
 
         return False
 
-    async def get_service_records(self, user_item_id: uuid.UUID) -> List[ServiceRecord]:
+    async def get_service_records(
+        self, user_item_id: uuid.UUID
+    ) -> Sequence[ServiceRecord]:
         """Получить историю обслуживания для конкретного элемента"""
         query = (
             select(ServiceRecord)
@@ -146,7 +148,7 @@ class MaintenanceRepository(BaseRepository):
 
     async def get_maintenance_items_requiring_service(
         self, user_id: int, vehicle_id: uuid.UUID, skip: int = 0, limit: int = 10
-    ) -> Tuple[List[UserMaintenanceItem], int]:
+    ) -> Sequence[UserMaintenanceItem]:
         """
         Получить элементы, требующие обслуживания для конкретного автомобиля.
         Возвращает кортеж (список элементов, общее количество)
@@ -159,7 +161,7 @@ class MaintenanceRepository(BaseRepository):
         vehicle = vehicle_result.scalar_one_or_none()
 
         if not vehicle:
-            return [], 0
+            return []
 
         current_odometer = vehicle.odometer
 
@@ -205,10 +207,6 @@ class MaintenanceRepository(BaseRepository):
             .options(joinedload(UserMaintenanceItem.maintenance_item))
         )
 
-        count_query = select(func.count()).select_from(query.subquery())
-        count_result = await self.session.execute(count_query)
-        total_count = count_result.scalar_one()
-
         query = (
             query.order_by(
                 # Сначала никогда не обслуживаемые
@@ -233,4 +231,4 @@ class MaintenanceRepository(BaseRepository):
         # Используем unique() для предотвращения дублирования записей при joinedload с коллекциями
         items = result.scalars().unique().all()
 
-        return items, total_count
+        return items

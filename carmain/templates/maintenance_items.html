@@ -32,7 +32,6 @@
         {% endif %}
     </div>
 
-
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center" style="column-gap: 0.75rem;">
@@ -50,7 +49,26 @@
             </div>
         </div>
     </div>
-
+    <form id="filtersForm"
+          hx-get="/vehicles/{{ vehicle.id }}/maintenance"
+          hx-include="#filtersForm"
+          hx-trigger="change"
+          hx-target="#maintenance-items-list"
+          hx-push-url="true"
+          hx-swap="outerHTML"
+          class="filters-toolbar mb-4 p-3 bg-light rounded">
+        <div class="row">
+            <div class="col-md-12 d-flex align-items-center justify-content-end">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="showAllToggle"
+                           name="show_all" value="true">
+                    <label class="form-check-label" for="showAllToggle">
+                        Показать все
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
 
     {% include "maintenance_items_list.html" %}
 </div>
