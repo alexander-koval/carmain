@@ -34,6 +34,21 @@
             height: 50px;
             margin-right: 10px;
         }
+        
+        /* Responsive carousel indicators */
+        @media (max-width: 576px) {
+            .carousel-indicators {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .carousel-indicators button {
+                width: 8px;
+                height: 8px;
+                margin: 0 2px;
+            }
+        }
     </style>
     {% block styles %}
     <link rel="stylesheet" href="/static/css/maintenance-directory.css">
