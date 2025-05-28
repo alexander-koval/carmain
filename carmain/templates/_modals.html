@@ -95,15 +95,19 @@
      style="display: none"
      x-data="{
          recordId: null,
+         itemId: null,
          itemName: '',
          vehicleId: null,
+         userItemId: null,
          serviceDate: null,
          serviceOdometer: 0,
          serviceComment: ''
      }"
      @open-edit-record-modal.window="
          recordId = $event.detail.id;
+         itemId = $event.detail.user_item_id;
          itemName = $event.detail.name;
+         console.log(`RECORD_ID: ${recordId} ${itemId}`);
          vehicleId = $event.detail.vehicle_id;
          $root.querySelector('#editServiceRecordModalLabel').textContent = 'Редактирование: ' + itemName;
          serviceDate = $event.detail.date || '';
@@ -112,7 +116,8 @@
      "
      x-on:htmx:after-settle.window="function() {
           const detail = $event.detail;
-          if (detail.elt && 
+          console.log(`RECORD_ID: ${recordId} ${itemId}`);
+          if (detail.elt &&
               detail.elt.id === 'service-records-container' && 
               detail.xhr.status >= 200 && detail.xhr.status < 300) {
               console.log('HTMX request successful, attempting to close edit modal.');
@@ -127,6 +132,8 @@
       }"
      @hidden.bs.modal="
          recordId = null;
+         console.log(`RECORD_ID: ${recordId}`);
+         itemId = null;
          itemName = '';
          vehicleId = null;
          serviceDate = null;
@@ -141,12 +148,13 @@
             </div>
             <div class="modal-body">
                 <form id="editServiceRecordForm" 
-                      x-bind:hx-post="'/service-records/' + recordId + '/update'" 
+                      hx-patch="/service-records/update"
                       x-bind:hx-target="'#service-records-container'"
                       hx-swap="outerHTML" 
                       hx-encoding="multipart/form-data">
                     <input type="hidden" name="record_id" x-bind:value="recordId">
                     <input type="hidden" name="vehicle_id" x-bind:value="vehicleId">
+                    <input type="hidden" name="user_item_id" x-bind:value="itemId">
                     <div class="mb-3">
                         <label for="editServiceDate" class="form-label">Дата обслуживания</label>
                         <input type="date" class="form-control" id="editServiceDate" name="service_date"

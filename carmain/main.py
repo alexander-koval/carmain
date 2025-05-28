@@ -16,7 +16,7 @@ from carmain.core import database
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
 from carmain.views import auth_router as auth_view_router
-from carmain.views.v1 import vehicle_view, maintenance_view
+from carmain.views.v1 import vehicle_view, maintenance_view, service_view
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -47,6 +47,7 @@ carmain.include_router(auth_router.users_router, prefix="/users", tags=["users"]
 carmain.include_router(vehicle_router.vehicle_router)
 carmain.include_router(vehicle_view.vehicle_router)
 carmain.include_router(maintenance_view.router)
+carmain.include_router(service_view.router)
 
 
 # @carmain.get("/")

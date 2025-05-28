@@ -110,6 +110,8 @@ class ServiceRecordCreate(ServiceRecord):
 
 
 class ServiceRecordUpdate(BaseModel):
+    record_id: int
+    vehicle_id: uuid.UUID
     user_item_id: uuid.UUID
     service_date: Optional[date] = None
     service_odometer: Optional[int] = None
@@ -119,6 +121,8 @@ class ServiceRecordUpdate(BaseModel):
     @classmethod
     def as_form(
         cls,
+        record_id: Annotated[int, Form()],
+        vehicle_id: Annotated[uuid.UUID, Form()],
         user_item_id: Annotated[uuid.UUID, Form()],
         service_date: Annotated[Optional[date], Form()] = None,
         service_odometer: Annotated[Optional[int], Form()] = None,
@@ -126,6 +130,8 @@ class ServiceRecordUpdate(BaseModel):
         service_photo: Optional[UploadFile] = None,
     ):
         return cls(
+            record_id=record_id,
+            vehicle_id=vehicle_id,
             user_item_id=user_item_id,
             service_date=service_date,
             service_odometer=service_odometer,

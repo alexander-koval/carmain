@@ -9,6 +9,7 @@
                 id: "{{ record.id }}", 
                 name: "{{ maintenance_item.name|e if maintenance_item is defined else 'Запись обслуживания' }}",
                 vehicle_id: "{{ vehicle.id }}",
+                user_item_id: "{{ record.user_item_id }}",
                 date: "{{ record.service_date.strftime('%Y-%m-%d') }}",
                 odometer: {{ record.service_odometer }},
                 comment: {{ record.comment|tojson if record.comment else '""' }}

@@ -22,6 +22,7 @@ from carmain.schemas.maintenance_schema import (
     MaintenanceItemDisplay,
     ServiceRecordCreate,
     UserMaintenanceItemUpdate,
+    ServiceRecordUpdate,
 )
 from carmain.services.base_service import BaseService
 from carmain.routers.v1.auth_router import current_active_verified_user
@@ -274,3 +275,24 @@ class MaintenanceService(BaseService):
         }
 
         return display_items, pagination
+
+    async def update_service_record(
+        self,
+        record_id: int,
+        service_record_update: ServiceRecordUpdate,
+    ) -> ServiceRecord:
+        """Обновить запись об обслуживании"""
+        record = await self.record_repository.get_by_id(record_id)
+        user_item = await self.user_maintenance_repository.get_by_id(
+            record.user_item_id
+        )
+        if user_item.user_id != self.user.id:
+            raise HTTPException(
+                status_code=404, detail="Запись обслуживания не найдена"
+            )
+        update_data = service_record_update.model_dump(
+            exclude_unset=True, exclude_defaults=True, exclude_none=True
+        )
+        update_data.pop("user_item_id", None)
+        updated = await self.record_repository.update_by_id(record_id, update_data)
+        return updated
