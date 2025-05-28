@@ -326,61 +326,6 @@ async def untrack_maintenance_item(
     )
 
 
-@router.get("/{vehicle_id}/maintenance-items/{item_id}")
-async def service_record_history_view(
-    request: Request,
-    vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
-    item_id: Annotated[
-        uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
-    ],
-    maintenance_service: Annotated[MaintenanceService, Depends()],
-):
-    """
-    Отображение истории обслуживания для конкретной детали
-    """
-    item = await maintenance_service.get_user_maintenance_item(item_id)
-    if (
-        not item
-        or item.vehicle_id != vehicle_id
-        or item.user_id != maintenance_service.user.id
-    ):
-        raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
-
-    records = await maintenance_service.get_service_records(item_id)
-
-    name_lower = item.maintenance_item.name.lower()
-    if "масл" in name_lower or "oil" in name_lower:
-        icon = "oil-can"
-    elif "тормоз" in name_lower or "brake" in name_lower:
-        icon = "exclamation-circle"
-    elif "ремень" in name_lower or "грм" in name_lower:
-        icon = "cogs"
-    elif "фильтр" in name_lower or "filter" in name_lower:
-        icon = "filter"
-    elif "аккум" in name_lower or "battery" in name_lower:
-        icon = "car-battery"
-    else:
-        icon = "wrench"
-
-    sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
-
-    today = date.today().isoformat()
-
-    return templates.TemplateResponse(
-        "service_records.html",
-        {
-            "request": request,
-            "user": maintenance_service.user,
-            "vehicle": item.vehicle,
-            "item": item,
-            "maintenance_item": item.maintenance_item,
-            "records": sorted_records,
-            "icon": icon,
-            "today": today,
-        },
-    )
-
-
 @router.get("/{vehicle_id}/add-maintenance-item")
 async def add_maintenance_item_view(
     request: Request,

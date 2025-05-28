@@ -116,9 +116,8 @@
      "
      x-on:htmx:after-settle.window="function() {
           const detail = $event.detail;
-          console.log(`RECORD_ID: ${recordId} ${itemId}`);
+          console.log(`RECORD_ID: ${recordId} ${itemId} DETAIL: ${detail.elt.id} ${detail.elt.id}`);
           if (detail.elt &&
-              detail.elt.id === 'service-records-container' && 
               detail.xhr.status >= 200 && detail.xhr.status < 300) {
               console.log('HTMX request successful, attempting to close edit modal.');
               const modalEl = document.getElementById('editServiceRecordModal');
@@ -147,8 +146,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editServiceRecordForm" 
-                      hx-patch="/service-records/update"
+                <form id="editServiceRecordForm"
+                      x-bind:hx-patch="itemId ? '/service-records/' + itemId : ''"
                       x-bind:hx-target="'#service-records-container'"
                       hx-swap="outerHTML" 
                       hx-encoding="multipart/form-data">
