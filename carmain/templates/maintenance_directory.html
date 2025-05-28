@@ -29,8 +29,8 @@
     <form id="filtersForm"
           hx-get="/vehicles/{{ vehicle_id }}/all-maintenance-items"
           hx-include="#filtersForm"
-          hx-trigger="keyup changed delay:500ms"
-          hx-target="#maintenanceItemsContainer"
+          hx-trigger="keyup changed delay:500ms, change from:#showTrackedOnly, change from:#categoryFilter"
+          hx-target="#maintenance-items-container"
           hx-swap="innerHTML"
           hx-indicator="#loadingIndicator"
           class="filters-toolbar mb-4 p-3 bg-light rounded">
@@ -41,7 +41,7 @@
             </div>
             <div class="col-md-4 mb-3 mb-md-0">
                 <select class="form-control" id="categoryFilter" name="category">
-                    <option value="">Все категории</option>
+                    <option value="all">Все категории</option>
                     <option value="engine">Двигатель</option>
                     <option value="brakes">Тормоза</option>
                     <option value="filters">Фильтры</option>
@@ -68,7 +68,7 @@
     </div>
 
 
-    <div id="maintenanceItemsContainer" class="row">
+    <div id="maintenance-items-container" class="row">
         {% include "maintenance_directory_list.html" %}
     </div>
     </div>

@@ -28,6 +28,7 @@ from carmain.schemas.maintenance_schema import (
     MaintenanceItemDisplay,
     ServiceRecordCreate,
     PaginationParams,
+    MaintenanceCategory,
 )
 from carmain.services.maintenance_service import MaintenanceService
 from carmain.services.vehicle_service import VehicleService
@@ -169,6 +170,9 @@ async def all_maintenance_items_view(
     vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
     maintenance_service: Annotated[MaintenanceService, Depends()],
     q: Optional[str] = Query(None, description="Поисковый запрос"),
+    category: Optional[MaintenanceCategory] = Query(
+        None, description="Фильтр по категории"
+    ),
     tracked_only: Optional[bool] = Query(
         False, description="Показывать только отслеживаемые"
     ),
@@ -193,6 +197,29 @@ async def all_maintenance_items_view(
 
         if q and q.lower() not in mi.name.lower():
             continue
+
+        # Фильтрация по категории
+        if category and category != MaintenanceCategory.ALL:
+            name_lower = mi.name.lower()
+            category_match = False
+            if category == MaintenanceCategory.ENGINE and (
+                "масл" in name_lower or "двигател" in name_lower
+            ):
+                category_match = True
+            elif category == MaintenanceCategory.BRAKES and (
+                "тормоз" in name_lower or "колод" in name_lower
+            ):
+                category_match = True
+            elif category == MaintenanceCategory.FILTERS and "фильтр" in name_lower:
+                category_match = True
+            elif category == MaintenanceCategory.BATTERY and (
+                "аккум" in name_lower or "батар" in name_lower
+            ):
+                category_match = True
+
+            if not category_match:
+                continue
+
         is_tracked = mi.id in tracked_ids
 
         if tracked_only and not is_tracked:
@@ -221,10 +248,13 @@ async def all_maintenance_items_view(
             }
         )
 
-    # is_htmx = request.headers.get("HX-Request") == "true"
+    is_htmx = request.headers.get("HX-Request") == "true"
+    is_maintenance_container_target = (
+        is_htmx and request.headers.get("HX-Target") == "maintenance-items-container"
+    )
     context = {"request": request, "vehicle_id": vehicle_id, "maintenance_items": items}
-    # if is_htmx:
-    #     return templates.TemplateResponse("maintenance_directory_list.html", context)
+    if is_maintenance_container_target:
+        return templates.TemplateResponse("maintenance_directory_list.html", context)
     return templates.TemplateResponse("maintenance_directory.html", context)
 
 

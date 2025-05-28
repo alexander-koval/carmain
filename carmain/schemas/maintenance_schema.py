@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Optional, List, Annotated
 
 from fastapi import Form, UploadFile, File
@@ -21,6 +21,14 @@ class MaintenanceItemType(str, Enum):
     AIR_FILTER = "air_filter"
     BATTERY = "battery"
     OTHER = "other"
+
+
+class MaintenanceCategory(StrEnum):
+    ENGINE = "engine"
+    BRAKES = "brakes"
+    FILTERS = "filters"
+    BATTERY = "battery"
+    ALL = "all"
 
 
 class MaintenanceItemBase(BaseModel):
