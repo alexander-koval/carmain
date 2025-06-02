@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     items_per_user: int = 50
     secret_key: str
     db_name: str
+    postgres_user: str
+    postgres_password: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

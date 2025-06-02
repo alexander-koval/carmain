@@ -15,7 +15,13 @@ from carmain.core.config import get_settings
 # from loguru import logger
 
 settings = get_settings()
-engine = create_async_engine(f"sqlite+aiosqlite:///{settings.db_name}.db", echo=True)
+# SQLite connection
+# engine = create_async_engine(f"sqlite+aiosqlite:///{settings.db_name}.db", echo=True)
+# PostgreSQL connection
+engine = create_async_engine(
+    f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@localhost:5432/{settings.db_name}",
+    echo=True
+)
 async_session_maker = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession, autoflush=False
 )

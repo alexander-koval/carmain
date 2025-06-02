@@ -1,9 +1,11 @@
 from logging.config import fileConfig
+import os
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from dotenv import load_dotenv
 
 from carmain.core.database import Base
 from carmain.models.users import *  # noqa
@@ -13,10 +15,22 @@ from carmain.models.items import *  # noqa
 from carmain.models.records import *  # noqa
 import fastapi_users_db_sqlalchemy  # noqa
 
+# Load environment variables from .env file
+load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Build database URL from environment variables
+postgres_user = os.getenv('POSTGRES_USER', 'carmain')
+postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
+postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
+postgres_port = os.getenv('POSTGRES_PORT', '5432')
+postgres_db = os.getenv('POSTGRES_DB', 'carmain')
+
+database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

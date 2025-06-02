@@ -13,19 +13,22 @@ from pathlib import Path
 # Try to load .env file
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     # dotenv not installed, try to read .env manually
-    env_path = Path('.env')
+    env_path = Path(".env")
     if env_path.exists():
         with open(env_path) as f:
             for line in f:
-                if line.strip() and not line.startswith('#'):
-                    key, value = line.strip().split('=', 1)
-                    os.environ[key] = value.strip('"\'')
+                if line.strip() and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value.strip("\"'")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +39,7 @@ LOAD DATABASE
     FROM sqlite://{sqlite_path}
     INTO {postgres_url}
 
-WITH include drop, create tables, create indexes, reset sequences
+WITH include drop, create tables, create indexes, reset sequences, no foreign keys
 
 SET work_mem to '256MB', maintenance_work_mem to '512 MB'
 
@@ -59,44 +62,41 @@ def run_pgloader(config_content: str) -> bool:
     """Run pgloader with the provided configuration."""
     try:
         # Create temporary config file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.load', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".load", delete=False) as f:
             f.write(config_content)
             config_file = f.name
-        
+
         logger.info(f"Created pgloader config: {config_file}")
         logger.info("Running pgloader migration...")
-        
+
         # Run pgloader
         result = subprocess.run(
-            ['pgloader', config_file],
-            capture_output=True,
-            text=True,
-            check=False
+            ["pgloader", config_file], capture_output=True, text=True, check=False
         )
-        
+
         # Log output
         if result.stdout:
             logger.info("pgloader output:")
-            for line in result.stdout.split('\n'):
+            for line in result.stdout.split("\n"):
                 if line.strip():
                     logger.info(f"  {line}")
-        
+
         if result.stderr:
             logger.error("pgloader errors:")
-            for line in result.stderr.split('\n'):
+            for line in result.stderr.split("\n"):
                 if line.strip():
                     logger.error(f"  {line}")
-        
+
         # Clean up config file
         os.unlink(config_file)
-        
+
         if result.returncode == 0:
             logger.info("pgloader migration completed successfully!")
             return True
         else:
             logger.error(f"pgloader failed with return code: {result.returncode}")
             return False
-            
+
     except FileNotFoundError:
         logger.error("pgloader not found. Install it first (see instructions above)")
         return False
@@ -108,7 +108,9 @@ def run_pgloader(config_content: str) -> bool:
 def check_pgloader_installed() -> bool:
     """Check if pgloader is installed."""
     try:
-        result = subprocess.run(['pgloader', '--version'], capture_output=True, check=False)
+        result = subprocess.run(
+            ["pgloader", "--version"], capture_output=True, check=False
+        )
         return result.returncode == 0
     except FileNotFoundError:
         return False
@@ -131,43 +133,45 @@ def install_pgloader_instructions():
     logger.info("  brew install pgloader")
     logger.info("")
     logger.info("Docker (alternative):")
-    logger.info("  docker run --rm -v $(pwd):/data dimitri/pgloader:latest pgloader /data/config.load")
+    logger.info(
+        "  docker run --rm -v $(pwd):/data dimitri/pgloader:latest pgloader /data/config.load"
+    )
 
 
 def main():
     """Main function to run the migration."""
     # Configuration
     SQLITE_PATH = os.path.abspath("carmain.db")
-    
+
     # PostgreSQL connection from environment variables
-    postgres_user = os.getenv('POSTGRES_USER', 'carmain')
-    postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
-    postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
-    postgres_port = os.getenv('POSTGRES_PORT', '5432')
-    postgres_db = os.getenv('POSTGRES_DB', 'carmain')
-    
+    postgres_user = os.getenv("POSTGRES_USER", "carmain")
+    postgres_password = os.getenv("POSTGRES_PASSWORD", "carmain_password")
+    postgres_host = os.getenv("POSTGRES_HOST", "localhost")
+    postgres_port = os.getenv("POSTGRES_PORT", "5432")
+    postgres_db = os.getenv("POSTGRES_DB", "carmain")
+
     postgres_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
-    
+    logger.info(f"{postgres_url}")
     logger.info("Starting Carmain database migration with pgloader...")
     logger.info(f"Source: SQLite ({SQLITE_PATH})")
     logger.info(f"Target: PostgreSQL ({postgres_host}:{postgres_port}/{postgres_db})")
-    
+
     # Check if SQLite file exists
     if not os.path.exists(SQLITE_PATH):
         logger.error(f"SQLite database file not found: {SQLITE_PATH}")
         return
-    
+
     # Check if pgloader is installed
     if not check_pgloader_installed():
         install_pgloader_instructions()
         return
-    
+
     # Create pgloader configuration
     config = create_pgloader_config(SQLITE_PATH, postgres_url)
-    
+
     # Run migration
     success = run_pgloader(config)
-    
+
     if success:
         logger.info("✅ Migration completed successfully!")
         logger.info("Next steps:")
