@@ -34,19 +34,27 @@ read -p "Are you sure? (y/N): " -n 1 -r
 echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Check if Docker container is running
+    CONTAINER_NAME="carmain-postgres-1"
+    if ! docker ps --format "table {{.Names}}" | grep -q "${CONTAINER_NAME}"; then
+        echo "Error: PostgreSQL Docker container '${CONTAINER_NAME}' is not running!"
+        echo "Please start it with: docker-compose up -d postgres"
+        exit 1
+    fi
+    
     # Terminate active connections to database
     echo "Terminating active connections..."
-    PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
+    docker exec ${CONTAINER_NAME} psql -U ${POSTGRES_USER} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();" 2>/dev/null || true
     
     # Drop and recreate database
     echo "Dropping database..."
-    PGPASSWORD=${POSTGRES_PASSWORD} dropdb -h localhost -U ${POSTGRES_USER} ${DB_NAME}
+    docker exec ${CONTAINER_NAME} dropdb -U ${POSTGRES_USER} ${DB_NAME} 2>/dev/null || true
     
     echo "Creating database..."
-    PGPASSWORD=${POSTGRES_PASSWORD} createdb -h localhost -U ${POSTGRES_USER} ${DB_NAME}
+    docker exec ${CONTAINER_NAME} createdb -U ${POSTGRES_USER} ${DB_NAME}
     
     echo "Restoring from backup..."
-    PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -U ${POSTGRES_USER} -d ${DB_NAME} < ${BACKUP_FILE}
+    docker exec -i ${CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${DB_NAME} < ${BACKUP_FILE}
     
     if [ $? -eq 0 ]; then
         echo "Database restored successfully from: ${BACKUP_FILE}"

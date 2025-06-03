@@ -19,7 +19,7 @@ settings = get_settings()
 # engine = create_async_engine(f"sqlite+aiosqlite:///{settings.db_name}.db", echo=True)
 # PostgreSQL connection
 engine = create_async_engine(
-    f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@localhost:5432/{settings.db_name}",
+    f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.db_name}",
     echo=True
 )
 async_session_maker = async_sessionmaker(
