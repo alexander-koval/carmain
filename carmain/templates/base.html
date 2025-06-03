@@ -34,7 +34,16 @@
             height: 50px;
             margin-right: 10px;
         }
-        
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background-image: url("/static/img/logo_new.svg");
+            background-repeat: no-repeat;
+            background-size: contain; /* или cover, или конкретные размеры */
+            margin-right: 10px;
+        }
+
         /* Responsive carousel indicators */
         @media (max-width: 576px) {
             .carousel-indicators {
@@ -57,7 +66,8 @@
 <body>
     <header class="header p-3">
         <div class="container d-flex justify-content-center align-items-center">
-            <img src="/static/img/logo.png" alt="Logo">
+<!--            <img src="/static/img/logo_new.svg" alt="Logo">-->
+            <div class="logo"></div>
             <h1 class="mb-0">Carmain</h1>
         </div>
     </header>
