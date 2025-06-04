@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 
 from carmain.services.vehicle_service import VehicleService
+from carmain.services.maintenance_service import MaintenanceService
 from carmain.schema.vehicle_schema import (
     VehicleSchema,
     VehicleCreate,
@@ -21,11 +22,23 @@ templates = Jinja2Templates(directory="carmain/templates")
 
 
 @vehicle_router.get("/")
-async def list_vehicles(request: Request, vehicle_service: VehicleService = Depends()):
+async def list_vehicles(
+    request: Request, 
+    vehicle_service: VehicleService = Depends(),
+    maintenance_service: MaintenanceService = Depends()
+):
     """Возвращает HTML-фрагмент со списком автомобилей пользователя"""
     vehicles = await vehicle_service.get_user_vehicles()
+    service_requiring = {
+        vehicle.id.hex: await maintenance_service.get_items_requiring_service_count(
+            vehicle.id
+        )
+        for vehicle in vehicles
+    }
     return templates.TemplateResponse(
-        request=request, name="vehicle_list.html", context={"vehicles": vehicles}
+        request=request, 
+        name="vehicle_list.html", 
+        context={"vehicles": vehicles, "service_requiring": service_requiring}
     )
 
 
@@ -77,6 +90,7 @@ async def update(
     brand: str = Form(...),
     model: str = Form(...),
     vehicle_service: VehicleService = Depends(),
+    maintenance_service: MaintenanceService = Depends(),
     user: User = Depends(current_active_verified_user),
 ):
     try:
@@ -86,11 +100,17 @@ async def update(
         )
 
         updated_vehicle = await vehicle_service.patch(obj_id, vehicle_data)
+        
+        service_requiring = {
+            updated_vehicle.id.hex: await maintenance_service.get_items_requiring_service_count(
+                updated_vehicle.id
+            )
+        }
 
         return templates.TemplateResponse(
             request=request,
             name="vehicle_card.html",
-            context={"vehicle": updated_vehicle},
+            context={"vehicle": updated_vehicle, "service_requiring": service_requiring},
         )
     except Exception as e:
         return templates.TemplateResponse(

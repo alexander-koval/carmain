@@ -1,3 +1,4 @@
+import sys
 import uuid
 from datetime import date, datetime
 from typing import List, Optional, Dict, Any, Tuple, Annotated, Sequence, Coroutine
@@ -173,6 +174,14 @@ class MaintenanceService(BaseService):
             )
         )
         return db_item
+
+    async def get_items_requiring_service_count(self, vehicle_id: uuid.UUID) -> int:
+        items = (
+            await self.maintenance_repository.get_maintenance_items_requiring_service(
+                self.user.id, vehicle_id, 0, sys.maxsize
+            )
+        )
+        return len(items)
 
     async def get_items_requiring_service(
         self,

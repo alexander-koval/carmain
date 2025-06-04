@@ -32,7 +32,7 @@
                     </div>
                     <div class="car-info-item">
                         <span class="car-info-label">Запланировано работ:</span>
-                        <span>2</span>
+                        <span>{{ service_requiring[vehicle.id.hex] if service_requiring is defined else '0' }}</span>
                     </div>
                 </div>
                 <div class="d-flex justify-content-between">
