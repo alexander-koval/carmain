@@ -10,7 +10,7 @@
             <h2>Мой гараж</h2>
             {% if user %}
             <div class="user-info">
-                <span class="me-3">{{ user.email }}</span>
+                <span class="me-3 d-none d-lg-inline">{{ user.email }}</span>
                 <a href="/auth/logout" class="btn btn-sm btn-outline-secondary">Выйти</a>
             </div>
             {% endif %}
