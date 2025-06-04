@@ -12,6 +12,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote
 
+from carmain.models.users import User
+from carmain.routers.v1.auth_router import current_active_verified_user
 from carmain.schema.user_schema import UserCreate, SignUpFormData
 
 auth_view_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -55,6 +57,19 @@ async def login_action(
         response.headers["location"] = quote(str("/"), safe=":/%#?=@[]!$&'()*+,;")
         response.status_code = status.HTTP_303_SEE_OTHER
         return response
+
+
+@auth_view_router.get("/logout")
+async def logout_action(
+    request: Request,
+    user: User = Depends(current_active_verified_user),
+    strategy: Strategy[models.UP, models.ID] = Depends(cookie_backend.get_strategy),
+):
+    token = request.headers.get("token")
+    response = await cookie_backend.logout(strategy, user, token)
+    response.headers["location"] = quote(str("/"), safe=":/%#?=@[]!$&'()*+,;")
+    response.status_code = status.HTTP_303_SEE_OTHER
+    return response
 
 
 @auth_view_router.post("/signup")
