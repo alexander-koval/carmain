@@ -123,6 +123,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.prod
+.env.local
 .venv
 env/
 venv/
@@ -165,3 +167,12 @@ migrations/
 
 # Database dumps
 carmain_dump*.sql
+backup_*.sql
+
+# Docker & production files
+.env.prod
+ssl/
+logs/
+
+# Media uploads
+media/
