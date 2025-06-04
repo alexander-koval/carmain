@@ -50,7 +50,7 @@
             <div class="modal-body">
                 <form id="serviceForm"
                       x-bind:hx-post="vehicleId ? '/vehicles/' + vehicleId + '/maintenance' : ''"
-                      x-bind:hx-target="itemId && itemId.startsWith('history-') ? '#service-records-container' : '#maintenance-items-list'"
+                      x-bind:hx-target="itemId ? '#service-records-container' : '#maintenance-items-list'"
                       hx-swap="outerHTML" 
                       hx-encoding="multipart/form-data">
                     <input type="hidden" name="user_item_id" x-bind:value="itemId">

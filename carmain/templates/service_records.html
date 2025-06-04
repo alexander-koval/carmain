@@ -34,19 +34,17 @@
         </div>
     </div>
 
-
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">История обслуживания</h5>
         <button class="btn btn-carmain btn-sm"
+                data-item-id="{{ item.id }}"
+                data-item-name="{{ maintenance_item.name }}"
+                data-vehicle-id="{{ vehicle.id }}"
+                data-date="{{ today if today is defined else '' }}"
+                data-odometer="{{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }}"
+                onclick="openServiceModal(this)"
                 data-bs-toggle="modal" 
-                data-bs-target="#serviceModal"
-                @click="$dispatch('open-service-modal', {
-                  id: 'history-{{ item.id }}', 
-                  name: '{{ maintenance_item.name }}',
-                  vehicle_id: '{{ vehicle.id }}',
-                  date: '{{ today }}',
-                  odometer: {{ vehicle.odometer if vehicle.odometer else 0 }}
-                })">
+                data-bs-target="#serviceModal">
             <i class="fas fa-plus-circle me-1"></i> Отметить новое обслуживание
         </button>
     </div>
@@ -56,4 +54,20 @@
         {% include "service_records_list.html" %}
     </div>
 </div>
+
+<script>
+function openServiceModal(button) {
+    const data = {
+        id: button.dataset.itemId,
+        name: button.dataset.itemName,
+        vehicle_id: button.dataset.vehicleId,
+        date: button.dataset.date,
+        odometer: parseInt(button.dataset.odometer) || 0
+    };
+    
+    window.dispatchEvent(new CustomEvent('open-service-modal', {
+        detail: data
+    }));
+}
+</script>
 {% endblock %}
