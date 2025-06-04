@@ -76,6 +76,12 @@ templates.env.filters["tojson"] = to_json_filter
 # templates.env.filters["tojson"] = to_json_filter
 
 
+@carmain.get("/health")
+async def health_check():
+    """Health check endpoint for load balancers and monitoring"""
+    return {"status": "healthy", "service": "carmain"}
+
+
 @carmain.get("/")
 async def index(
     request: Request,
