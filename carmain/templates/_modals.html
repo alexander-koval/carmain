@@ -18,10 +18,27 @@
          vehicleId = $event.detail.vehicle_id;
          $root.querySelector('.modal-title').textContent = 'Подтверждение: ' + itemName;
          serviceDate = $event.detail.date || '{{ today if today is defined else '' }}';
-         serviceOdometer = $event.detail.odometer || {{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }};
+         serviceOdometer = $event.detail.odometer || 0;
          serviceComment = '';
          if ($refs.servicePhotoInput) $refs.servicePhotoInput.value = null;
+         // Даем Alpine время обновить DOM и затем просим HTMX перечитать форму
+         Alpine.nextTick(() => {
+             const formElement = document.getElementById('serviceForm');
+             if (formElement) {
+                 // x-bind:hx-post на форме должен был уже обновить атрибут
+                 console.log('Current hx-post on FORM after Alpine update:', formElement.getAttribute('hx-post'));
+                 if (htmx) { // Убедимся, что htmx доступен
+                     htmx.process(formElement); // Говорим HTMX перечитать этот элемент
+                     console.log('HTMX processed form element.');
+                 } else {
+                     console.error('htmx is not defined on window or globally.');
+                 }
+             } else {
+                 console.error('Form element #serviceForm not found!');
+             }
+         });
      "
+
      x-on:htmx:after-settle.window="function() {
           const detail = $event.detail;
           if (detail.elt && 
@@ -40,7 +57,21 @@
      @hidden.bs.modal="
          itemId = null;
          itemName = '';
-         $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';">
+         vehicleId = null;
+         serviceDate = null;
+         serviceOdometer = 0;
+         serviceComment = '';
+         if ($refs.servicePhotoInput) $refs.servicePhotoInput.value = null;
+         $root.querySelector('.modal-title').textContent = 'Подтверждение обслуживания';
+         console.log('Modal hidden, all data reset.');
+         // Также нужно сбросить hx-post на форме или перепроцессить ее
+         Alpine.nextTick(() => {
+             const formElement = document.getElementById('serviceForm');
+             if (formElement) {
+                 console.log('hx-post on form after modal hide:', formElement.getAttribute('hx-post'));
+                 if (htmx) htmx.process(formElement);
+             }
+         });">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success bg-opacity-25">
@@ -50,7 +81,7 @@
             <div class="modal-body">
                 <form id="serviceForm"
                       x-bind:hx-post="vehicleId ? '/vehicles/' + vehicleId + '/maintenance' : ''"
-                      x-bind:hx-target="itemId ? '#service-records-container' : '#maintenance-items-list'"
+                      x-bind:hx-target="document.getElementById('service-records-container') ? '#service-records-container' : '#maintenance-items-list'"
                       hx-swap="outerHTML" 
                       hx-encoding="multipart/form-data">
                     <input type="hidden" name="user_item_id" x-bind:value="itemId">

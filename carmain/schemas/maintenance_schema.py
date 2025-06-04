@@ -118,7 +118,7 @@ class ServiceRecordCreate(ServiceRecord):
 
 
 class ServiceRecordUpdate(ServiceRecordBase):
-    record_id: int
+    record_id: uuid.UUID
     vehicle_id: uuid.UUID
     service_date: Optional[date] = None
     service_odometer: Optional[int] = None
@@ -126,7 +126,7 @@ class ServiceRecordUpdate(ServiceRecordBase):
     @classmethod
     def as_form(
         cls,
-        record_id: Annotated[int, Form()],
+        record_id: Annotated[uuid.UUID, Form()],
         vehicle_id: Annotated[uuid.UUID, Form()],
         user_item_id: Annotated[uuid.UUID, Form()],
         service_date: Annotated[Optional[date], Form()] = None,

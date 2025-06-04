@@ -54,20 +54,4 @@
         {% include "service_records_list.html" %}
     </div>
 </div>
-
-<script>
-function openServiceModal(button) {
-    const data = {
-        id: button.dataset.itemId,
-        name: button.dataset.itemName,
-        vehicle_id: button.dataset.vehicleId,
-        date: button.dataset.date,
-        odometer: parseInt(button.dataset.odometer) || 0
-    };
-    
-    window.dispatchEvent(new CustomEvent('open-service-modal', {
-        detail: data
-    }));
-}
-</script>
 {% endblock %}

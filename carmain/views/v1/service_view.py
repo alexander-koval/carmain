@@ -8,6 +8,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
+from carmain.models.items import UserMaintenanceItem
+from carmain.models.vehicles import Vehicle
 from carmain.schemas.maintenance_schema import ServiceRecordUpdate, ServiceRecordCreate
 from carmain.services.maintenance_service import MaintenanceService
 
@@ -138,13 +140,36 @@ async def create_service_record(
     _ = await maintenance_service.create_service_record(service_record_create)
 
     user_item_id = item_id
-    item = await maintenance_service.get_user_maintenance_item(user_item_id)
+    item: UserMaintenanceItem = await maintenance_service.get_user_maintenance_item(
+        user_item_id
+    )
     if not item or item.user_id != maintenance_service.user.id:
         raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
+
+    vehicle = item.vehicle
+    if not vehicle or vehicle.user_id != maintenance_service.user.id:
+        raise HTTPException(status_code=404, detail="Автомобиль не найден")
 
     records = await maintenance_service.get_service_records(user_item_id)
     sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
 
+    is_htmx_request = request.headers.get("HX-Request") == "true"
+    is_item_list_target = (
+        is_htmx_request and request.headers.get("HX-Target") == "maintenance-items-list"
+    )
+
+    # if is_item_list_target:
+    #     return templates.TemplateResponse(
+    #         "maintenance_items_list.html",
+    #         {
+    #             "request": request,
+    #             "vehicle": vehicle,
+    #             "maintenance_items": maintenance_items,
+    #             "pagination": pagination_params,
+    #             "today": date.today().isoformat(),
+    #         },
+    #     )
+    #
     return templates.TemplateResponse(
         "service_records_list.html",
         {

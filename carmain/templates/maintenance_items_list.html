@@ -46,15 +46,14 @@
 
                     <button class="btn btn-sm btn-outline-success ms-2"
                             style="z-index: 2; position: relative;"
+                            data-item-id="{{ item.id }}"
+                            data-item-name="{{ item.name }}"
+                            data-vehicle-id="{{ vehicle.id }}"
+                            data-date="{{ today if today is defined else '' }}"
+                            data-odometer="{{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }}"
+                            onclick="openServiceModal(this)"
                             data-bs-toggle="modal"
-                            data-bs-target="#serviceModal"
-                            @click='$dispatch("open-service-modal", { 
-                                id: {{ item.id|tojson }}, 
-                                name: {{ item.name|tojson }},
-                                vehicle_id: "{{ vehicle.id }}",
-                                date: "{{ today if today is defined else "" }}",
-                                odometer: {{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }}
-                            });'>
+                            data-bs-target="#serviceModal">
                         <span style="white-space: nowrap;">
                             <i class="fas fa-check me-1"></i> Обслужено
                         </span>
