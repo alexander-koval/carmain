@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
-from carmain.schemas.maintenance_schema import ServiceRecordUpdate
+from carmain.schemas.maintenance_schema import ServiceRecordUpdate, ServiceRecordCreate
 from carmain.services.maintenance_service import MaintenanceService
 
 router = APIRouter(prefix="/service-records", tags=["service-records"])
@@ -96,6 +96,46 @@ async def update_service_record(
     updated_record = await maintenance_service.update_service_record(
         service_record_update.record_id, service_record_update
     )
+
+    user_item_id = item_id
+    item = await maintenance_service.get_user_maintenance_item(user_item_id)
+    if not item or item.user_id != maintenance_service.user.id:
+        raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
+
+    records = await maintenance_service.get_service_records(user_item_id)
+    sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
+
+    return templates.TemplateResponse(
+        "service_records_list.html",
+        {
+            "request": request,
+            "vehicle": item.vehicle,
+            "item": item,
+            "maintenance_item": item.maintenance_item,
+            "records": sorted_records,
+        },
+    )
+
+
+@router.post(
+    "/{item_id}",
+    response_class=HTMLResponse,
+)
+async def create_service_record(
+    request: Request,
+    item_id: Annotated[
+        uuid.UUID, Path(description="UUID идентификатор элемента обслуживания")
+    ],
+    service_record_create: Annotated[
+        ServiceRecordCreate,
+        Depends(ServiceRecordCreate.as_form),
+    ],
+    maintenance_service: Annotated[MaintenanceService, Depends()],
+):
+    """
+    Обновить запись об обслуживании автомобиля и вернуть обновленный список записей.
+    """
+    _ = await maintenance_service.create_service_record(service_record_create)
 
     user_item_id = item_id
     item = await maintenance_service.get_user_maintenance_item(user_item_id)

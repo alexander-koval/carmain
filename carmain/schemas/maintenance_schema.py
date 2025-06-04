@@ -117,14 +117,11 @@ class ServiceRecordCreate(ServiceRecord):
     pass
 
 
-class ServiceRecordUpdate(BaseModel):
+class ServiceRecordUpdate(ServiceRecordBase):
     record_id: int
     vehicle_id: uuid.UUID
-    user_item_id: uuid.UUID
     service_date: Optional[date] = None
     service_odometer: Optional[int] = None
-    comment: Optional[str] = None
-    service_photo: Optional[UploadFile] = File(None)
 
     @classmethod
     def as_form(

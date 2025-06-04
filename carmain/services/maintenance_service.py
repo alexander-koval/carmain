@@ -121,7 +121,7 @@ class MaintenanceService(BaseService):
         """Получить историю обслуживания для конкретного элемента"""
         return await self.record_repository.get_by_user_item_id(user_item_id)
 
-    async def create_service_record(self, record: BaseModel) -> ServiceRecord:
+    async def create_service_record(self, record: ServiceRecordCreate) -> ServiceRecord:
         """Создать запись об обслуживании"""
         record_data = record.model_dump(exclude_unset=True)
         db_item = ServiceRecord(**record_data)
