@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_user: str
     postgres_password: str
-
+    httponly: bool = False
     model_config = SettingsConfigDict(env_file=".env")
 
 

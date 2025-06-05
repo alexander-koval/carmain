@@ -14,14 +14,23 @@ from carmain.core.config import get_settings
 # from sqlalchemy import event
 # from loguru import logger
 
+import os
+
 settings = get_settings()
-# SQLite connection
-# engine = create_async_engine(f"sqlite+aiosqlite:///{settings.db_name}.db", echo=True)
-# PostgreSQL connection
-engine = create_async_engine(
-    f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.db_name}",
-    echo=True
-)
+
+# Use DATABASE_URL from environment if available (for production)
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    # Convert to async URL if needed
+    if database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+    engine = create_async_engine(database_url, echo=True)
+else:
+    # Fallback to settings for local development
+    engine = create_async_engine(
+        f"postgresql+asyncpg://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.db_name}",
+        echo=True
+    )
 async_session_maker = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession, autoflush=False
 )

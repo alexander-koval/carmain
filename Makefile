@@ -36,3 +36,30 @@ backup-db: ## Backup production database
 
 restore-db: ## Restore database from backup (usage: make restore-db BACKUP=backup_file.sql)
 	docker-compose -f docker-compose.prod.yml exec -T postgres psql -U $$POSTGRES_USER $$DB_NAME < $(BACKUP)
+
+# Docker Registry Commands
+GITHUB_USERNAME ?= yourusername
+IMAGE_NAME = ghcr.io/$(GITHUB_USERNAME)/carmain
+
+docker-login: ## Login to GitHub Container Registry
+	echo $$GITHUB_TOKEN | docker login ghcr.io -u $(GITHUB_USERNAME) --password-stdin
+
+docker-build-push: ## Build and push image to GitHub Container Registry
+	docker build -f Dockerfile.prod -t $(IMAGE_NAME):latest .
+	docker push $(IMAGE_NAME):latest
+
+docker-build-tag: ## Build and push with version tag (usage: make docker-build-tag VERSION=v1.0.0)
+	docker build -f Dockerfile.prod -t $(IMAGE_NAME):$(VERSION) -t $(IMAGE_NAME):latest .
+	docker push $(IMAGE_NAME):$(VERSION)
+	docker push $(IMAGE_NAME):latest
+
+# Docker Hub Commands
+DOCKERHUB_USERNAME ?= yourusername
+DOCKERHUB_IMAGE = $(DOCKERHUB_USERNAME)/carmain
+
+dockerhub-login: ## Login to Docker Hub
+	docker login
+
+dockerhub-build-push: ## Build and push to Docker Hub
+	docker build -f Dockerfile.prod -t $(DOCKERHUB_IMAGE):latest .
+	docker push $(DOCKERHUB_IMAGE):latest

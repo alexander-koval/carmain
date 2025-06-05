@@ -1,57 +1,43 @@
 FROM python:3.12-slim
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     POETRY_NO_INTERACTION=1 \
-    POETRY_VENV_IN_PROJECT=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+    POETRY_VENV_CREATE=false \
+    POETRY_CACHE_DIR=/tmp/poetry_cache \
+    PIP_NO_CACHE_DIR=1
 
-# Create non-root user
-RUN groupadd -r carmain && useradd -r -g carmain carmain
-
-# Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry (matching your version)
 RUN pip install poetry==2.1.2
 
-# Copy poetry files first for better caching
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
+COPY poetry.lock* ./
 
-# Install dependencies only (no dev dependencies for production)
-RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR
+RUN poetry config virtualenvs.create false
+RUN poetry config virtualenvs.in-project false
 
-# Copy application code
+RUN poetry lock && poetry install --no-root && rm -rf $POETRY_CACHE_DIR
+
+RUN groupadd -r carmain && useradd -r -g carmain -m carmain
+
 COPY . .
 
-# Create necessary directories
 RUN mkdir -p /app/logs /app/media
 
-# Change ownership to non-root user
-RUN chown -R carmain:carmain /app
-
-# Switch to non-root user
-USER carmain
-
-# Make entrypoint executable
 RUN chmod +x entrypoint.sh
 
-# Health check
+RUN chown -R carmain:carmain /app
+
+USER carmain
+
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Expose port
 EXPOSE 8000
 
-# Set entrypoint
 ENTRYPOINT ["./entrypoint.sh"]

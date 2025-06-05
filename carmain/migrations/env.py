@@ -22,15 +22,18 @@ load_dotenv()
 # access to the values within the .ini file in use.
 config = context.config
 
-# Build database URL from environment variables
-postgres_user = os.getenv('POSTGRES_USER', 'carmain')
-postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
-postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
-postgres_port = os.getenv('POSTGRES_PORT', '5432')
-postgres_db = os.getenv('POSTGRES_DB', 'carmain')
-
-database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
-config.set_main_option("sqlalchemy.url", database_url)
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
+else:
+    postgres_user = os.getenv('POSTGRES_USER', 'carmain')
+    postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
+    postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
+    postgres_port = os.getenv('POSTGRES_PORT', '5432')
+    postgres_db = os.getenv('POSTGRES_DB', 'carmain')
+    
+    database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+    config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -88,7 +91,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
 
         with context.begin_transaction():
             context.run_migrations()

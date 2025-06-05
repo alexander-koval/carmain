@@ -13,9 +13,12 @@ services:
       - carmain_network
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    # For local build:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.prod
+    # For production with published image:
+    image: ghcr.io/yourusername/carmain:latest
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${DB_NAME}
       ENVIRONMENT: production

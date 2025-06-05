@@ -14,8 +14,12 @@ from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from carmain.core import database
+from carmain.core.config import get_settings
 from carmain.models.auth import AccessToken, get_access_token_db
 from carmain.models.users import User, get_user_db
+
+
+settings = get_settings()
 
 
 def get_database_strategy(
@@ -64,7 +68,17 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 
 password_helper = PasswordHelper()
 bearer_transport = BearerTransport(tokenUrl="/auth/login")
-cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=86400)
+
+if not settings.httponly:
+    cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=86400)
+else:
+    cookie_transport = CookieTransport(
+        cookie_name="token",
+        cookie_max_age=86400,
+        cookie_secure=False,
+        cookie_samesite="lax",
+        cookie_httponly=True,
+    )
 jwt_backend = AuthenticationBackend(
     name="jwt_session", transport=bearer_transport, get_strategy=get_jwt_strategy
 )
