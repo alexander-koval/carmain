@@ -1,39 +1,149 @@
-# Carmain Service Description
+# Carmain - Система управления техническим обслуживанием автомобилей
 
-Carmain is a web application for vehicle maintenance management that allows users to track service history and receive reminders about scheduled maintenance procedures.
+<div align="center">
+  <img src="carmain/static/img/demo.gif" alt="Demo" />
+</div>
 
-## Key Features:
+Carmain - это современное веб-приложение для управления техническим обслуживанием автомобилей, позволяющее пользователям отслеживать историю проведенных работ и получать напоминания о запланированных процедурах.
 
-1. **Vehicle Management**
-   - Registration and tracking of multiple vehicles in a single account
-   - Storage of basic information: make, model, year, mileage
+## Основные функции
 
-2. **Maintenance Management**
-   - Catalog of typical maintenance procedures (MaintenanceItem)
-   - Configuration of individual maintenance intervals for each vehicle
-   - Tracking of the last date and mileage when work was performed
+1. **Управление автомобилями**
+   - Регистрация и отслеживание нескольких автомобилей в одном аккаунте
+   - Хранение основной информации: марка, модель, год выпуска, пробег
 
-3. **Service Records**
-   - Maintenance of a log of completed work (ServiceRecord)
-   - Recording of service date, mileage, and comments for each procedure
-   - History of all service procedures
+2. **Управление техническим обслуживанием**
+   - Каталог типичных работ по обслуживанию (MaintenanceItem)
+   - Настройка индивидуальных интервалов обслуживания для каждого автомобиля
+   - Отслеживание последней даты и пробега выполнения работ
 
-4. **Reminder System**
-   - Notifications about upcoming maintenance deadlines
-   - Calculation of the next service date based on mileage/time
+3. **Учет сервисных работ**
+   - Ведение журнала выполненных работ (ServiceRecord)
+   - Запись даты обслуживания, пробега и комментариев к работам
+   - История всех сервисных процедур
 
-## Architecture:
+4. **Система напоминаний**
+   - Уведомления о приближающихся сроках обслуживания
+   - Расчет следующей даты обслуживания на основе пробега/времени
 
-- Modern web application built with FastAPI and SQLAlchemy ORM
-- Interactive interface using HTMX and Bootstrap
-- Implementation of business logic through a service layer and repository pattern
-- User management system (registration, authorization)
-- Administrative panel for data management
+## Технологический стек
 
-Carmain helps vehicle owners:
-- Never miss important scheduled maintenance
-- Maintain a complete vehicle service history
-- Optimize maintenance expenses
-- Keep their vehicles in good technical condition
+- **Backend**: FastAPI, SQLAlchemy ORM, PostgreSQL
+- **Frontend**: HTMX, Bootstrap 4.5, Jinja2 шаблоны
+- **Архитектура**: Сервисный слой, паттерн Репозиторий, Dependency Injection
+- **Аутентификация**: FastAPI Users с cookie-сессиями
+- **Админ-панель**: SQLAdmin для управления данными
 
-The interface features a yellow color scheme, which is associated with automotive themes.
+## Быстрый старт
+
+### Настройка для разработки
+
+1. **Клонируйте репозиторий**
+   ```bash
+   git clone https://github.com/yourusername/carmain.git
+   cd carmain
+   ```
+
+2. **Установите зависимости**
+   ```bash
+   poetry install
+   ```
+
+3. **Настройте переменные окружения**
+   ```bash
+   cp .env.example .env
+   # Отредактируйте .env с учетными данными базы данных
+   ```
+
+4. **Запустите с Docker (рекомендуется)**
+   ```bash
+   make dev
+   # или
+   docker-compose -f docker-compose.dev.yml up --build
+   ```
+
+5. **Или запустите локально**
+   ```bash
+   poetry run uvicorn carmain.main:carmain --reload
+   ```
+
+### Развертывание в продакшене
+
+1. **Подготовьте окружение**
+   ```bash
+   cp .env.prod.example .env.prod
+   # Отредактируйте .env.prod с настройками продакшена
+   ```
+
+2. **Разверните с Docker**
+   ```bash
+   make build-prod
+   make up-prod
+   ```
+
+3. **Или вручную**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+## Доступные команды
+
+```bash
+make help           # Показать все доступные команды
+make dev           # Запустить среду разработки
+make prod          # Запустить продакшен среду
+make build-prod    # Собрать продакшен образы
+make logs          # Показать логи продакшена
+make backup-db     # Создать бэкап базы данных
+make clean         # Очистить контейнеры и тома
+```
+
+## Структура проекта
+
+```
+carmain/
+├── carmain/                 # Основной пакет приложения
+│   ├── admin/              # Конфигурации админ-панели
+│   ├── core/               # Основная функциональность (config, database, etc.)
+│   ├── models/             # SQLAlchemy модели
+│   ├── repository/         # Слой доступа к данным
+│   ├── routers/            # API маршруты
+│   ├── schema/             # Pydantic схемы
+│   ├── services/           # Слой бизнес-логики
+│   ├── static/             # Статические файлы (CSS, JS, изображения)
+│   ├── templates/          # Jinja2 шаблоны
+│   ├── views/              # Веб-контроллеры
+│   └── main.py             # FastAPI приложение
+├── docker-compose.dev.yml  # Docker настройки для разработки
+├── docker-compose.prod.yml # Docker настройки для продакшена
+├── Dockerfile              # Dockerfile для разработки
+├── Dockerfile.prod         # Dockerfile для продакшена
+├── nginx.conf              # Конфигурация Nginx
+└── Makefile               # Удобные команды
+```
+
+## Переменные окружения
+
+Ключевые переменные окружения (полный список в `.env.prod.example`):
+
+- `SECRET_KEY` - Секретный ключ приложения
+- `DB_NAME` - Имя базы данных
+- `POSTGRES_USER` - Пользователь базы данных
+- `POSTGRES_PASSWORD` - Пароль базы данных
+- `ADMIN_EMAIL` - Email администратора
+
+## Участие в разработке
+
+1. Сделайте форк репозитория
+2. Создайте ветку для новой функции (`git checkout -b feature/amazing-feature`)
+3. Зафиксируйте изменения (`git commit -m 'Add some amazing feature'`)
+4. Отправьте в ветку (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
+
+## Лицензия
+
+Этот проект лицензирован под лицензией MIT - подробности в файле [LICENSE](LICENSE).
+
+## Поддержка
+
+Если у вас возникли проблемы или есть вопросы, пожалуйста, создайте issue на GitHub.
