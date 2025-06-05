@@ -22,10 +22,13 @@ load_dotenv()
 # access to the values within the .ini file in use.
 config = context.config
 
+# Get database URL from environment variables
 database_url = os.getenv('DATABASE_URL')
 if database_url:
+    # Use DATABASE_URL if provided (for Docker/Portainer deployments)
     config.set_main_option("sqlalchemy.url", database_url)
 else:
+    # Build database URL from separate environment variables (for local development)
     postgres_user = os.getenv('POSTGRES_USER', 'carmain')
     postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
     postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
@@ -46,6 +49,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 
 target_metadata = Base.metadata
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

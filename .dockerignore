@@ -28,7 +28,7 @@ coverage.xml
 .pytest_cache
 
 # Poetry
-# poetry.lock
+# poetry.lock  # Commented out - needed for production builds
 
 # Development
 .vscode
