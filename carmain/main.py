@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import Depends
 from markupsafe import Markup
@@ -12,6 +13,7 @@ from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
 from carmain.admin.records import ServiceRecordAdmin
 from carmain.admin.users import UserAdmin, AccessTokenAdmin
 from carmain.admin.vehicles import VehicleAdmin
+from carmain.bootstrap import create_initial_maintenance_items
 from carmain.core import database
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
@@ -21,8 +23,29 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from loguru import logger
 
-carmain = FastAPI(title="Carmain", debug=True)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create initial maintenance items
+    logger.info("Application startup: initializing maintenance items")
+    
+    # Использование get_async_session корректным образом
+    async for session in database.get_async_session():
+        try:
+            await create_initial_maintenance_items(session)
+        except Exception as e:
+            logger.error(f"Error during initialization: {e}")
+            raise
+    
+    yield
+    
+    # Shutdown: cleanup resources if needed
+    logger.info("Application shutdown: cleaning up resources")
+
+
+carmain = FastAPI(title="Carmain", debug=True, lifespan=lifespan)
 
 carmain.mount("/static", StaticFiles(directory="carmain/static"), name="static")
 
