@@ -33,7 +33,7 @@ else:
     postgres_password = os.getenv('POSTGRES_PASSWORD', 'carmain_password')
     postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
     postgres_port = os.getenv('POSTGRES_PORT', '5432')
-    postgres_db = os.getenv('POSTGRES_DB', 'carmain')
+    postgres_db = os.getenv('DB_NAME', 'carmain')
     
     database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
     config.set_main_option("sqlalchemy.url", database_url)

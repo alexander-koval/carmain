@@ -1,4 +1,5 @@
 import datetime
+import os
 from typing import Optional, Annotated
 
 from fastapi import Request, Depends
@@ -13,6 +14,7 @@ from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseS
 from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
+from loguru import logger
 from carmain.core import database
 from carmain.core.config import get_settings
 from carmain.models.auth import AccessToken, get_access_token_db
@@ -69,6 +71,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 password_helper = PasswordHelper()
 bearer_transport = BearerTransport(tokenUrl="/auth/login")
 
+
+is_httponly = os.getenv("HTTPONLY")
+
+logger.info(f"is HTTPONLY: {is_httponly} [{settings.httponly}]")
 if not settings.httponly:
     cookie_transport = CookieTransport(cookie_name="token", cookie_max_age=86400)
 else:

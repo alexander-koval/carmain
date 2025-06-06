@@ -23,9 +23,9 @@ templates = Jinja2Templates(directory="carmain/templates")
 
 @vehicle_router.get("/")
 async def list_vehicles(
-    request: Request, 
+    request: Request,
     vehicle_service: VehicleService = Depends(),
-    maintenance_service: MaintenanceService = Depends()
+    maintenance_service: MaintenanceService = Depends(),
 ):
     """Возвращает HTML-фрагмент со списком автомобилей пользователя"""
     vehicles = await vehicle_service.get_user_vehicles()
@@ -36,9 +36,9 @@ async def list_vehicles(
         for vehicle in vehicles
     }
     return templates.TemplateResponse(
-        request=request, 
-        name="vehicle_list.html", 
-        context={"vehicles": vehicles, "service_requiring": service_requiring}
+        request=request,
+        name="vehicle_list.html",
+        context={"vehicles": vehicles, "service_requiring": service_requiring},
     )
 
 
@@ -58,15 +58,14 @@ async def create(
     request: Request,
     brand: str = Form(...),
     model: str = Form(...),
-    year: str = Form(...),
+    year: int = Form(...),
     odometer: int = Form(...),
     vehicle_service: VehicleService = Depends(),
     user: User = Depends(current_active_verified_user),
 ):
     try:
-        year_date = datetime.date.fromisoformat(year)
         vehicle_data = VehicleCreate(
-            brand=brand, model=model, year=year_date, odometer=odometer, user_id=user.id
+            brand=brand, model=model, year=year, odometer=odometer, user_id=user.id
         )
 
         await vehicle_service.add(vehicle_data)
@@ -85,7 +84,7 @@ async def create(
 async def update(
     request: Request,
     obj_id: uuid.UUID,
-    year: str = Form(...),
+    year: int = Form(...),
     odometer: int = Form(...),
     brand: str = Form(...),
     model: str = Form(...),
@@ -94,13 +93,12 @@ async def update(
     user: User = Depends(current_active_verified_user),
 ):
     try:
-        year_date = datetime.date.fromisoformat(year)
         vehicle_data = VehicleUpdate(
-            brand=brand, model=model, year=year_date, odometer=odometer
+            brand=brand, model=model, year=year, odometer=odometer
         )
 
         updated_vehicle = await vehicle_service.patch(obj_id, vehicle_data)
-        
+
         service_requiring = {
             updated_vehicle.id.hex: await maintenance_service.get_items_requiring_service_count(
                 updated_vehicle.id
@@ -110,7 +108,10 @@ async def update(
         return templates.TemplateResponse(
             request=request,
             name="vehicle_card.html",
-            context={"vehicle": updated_vehicle, "service_requiring": service_requiring},
+            context={
+                "vehicle": updated_vehicle,
+                "service_requiring": service_requiring,
+            },
         )
     except Exception as e:
         return templates.TemplateResponse(

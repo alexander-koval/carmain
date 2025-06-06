@@ -11,7 +11,7 @@ class VehicleSchema(BaseModel):
 
     brand: str
     model: str
-    year: datetime.date
+    year: int
     odometer: int
 
 

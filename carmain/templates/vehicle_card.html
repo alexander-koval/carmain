@@ -20,7 +20,7 @@
                 <div class="car-info">
                     <div class="car-info-item">
                         <span class="car-info-label">Год выпуска:</span>
-                        <span>{{ vehicle.year.strftime('%Y') }}</span>
+                        <span>{{ vehicle.year }}</span>
                     </div>
                     <div class="car-info-item">
                         <span class="car-info-label">Текущий пробег:</span>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="d-flex justify-content-between">
                     <button class="btn btn-outline-secondary btn-sm" 
-                           onclick="editVehicle('{{ vehicle.id }}', '{{ vehicle.brand }}', '{{ vehicle.model }}', '{{ vehicle.year.strftime('%Y-%m-%d') }}', {{ vehicle.odometer }})"
+                           onclick="editVehicle('{{ vehicle.id }}', '{{ vehicle.brand }}', '{{ vehicle.model }}', '{{ vehicle.year }}', {{ vehicle.odometer }})"
                            data-bs-toggle="modal" data-bs-target="#editCarModal">
                         <i class="fas fa-edit me-1"></i> Редактировать
                     </button>
