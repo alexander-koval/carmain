@@ -17,7 +17,8 @@ from carmain.models.records import *
 
 settings = get_settings()
 # print(settings)
-engine = create_engine(f"sqlite:///{settings.db_name}.db", echo=True)
+#engine = create_engine(f"sqlite:///{settings.db_name}.db", echo=True)
+engine = create_engine(f"postgresql+psycopg2://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.db_name}")
 Session = sessionmaker(engine)
 
 

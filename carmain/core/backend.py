@@ -15,8 +15,11 @@ from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 
 from loguru import logger
+from sqlalchemy import update
+
 from carmain.core import database
 from carmain.core.config import get_settings
+from carmain.core.database import get_async_session
 from carmain.models.auth import AccessToken, get_access_token_db
 from carmain.models.users import User, get_user_db
 
@@ -55,6 +58,11 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_register(
         self, user: models.UP, request: Optional[Request] = None
     ) -> None:
+        if settings.auto_verify:
+            async for session in get_async_session():
+                await session.execute(update(User).where(User.id == user.id).values(is_verified=True))
+                await session.commit()
+
         return await super().on_after_register(user, request)
 
     async def on_after_forgot_password(

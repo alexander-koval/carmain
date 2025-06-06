@@ -18,26 +18,29 @@ from carmain.models.users import User, get_user_db
 from carmain.repository.user_repository import UserRepository
 from carmain.schema.auth_schema import SignUp  # , SignInResponse
 from carmain.services.base_service import BaseService
+from carmain.core.backend import UserManager
 
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-    reset_password_token_secret = database.settings.secret_key
-    verification_token_secret = database.settings.secret_key
-
-    async def on_after_register(
-        self, user: models.UP, request: Optional[Request] = None
-    ) -> None:
-        return await super().on_after_register(user, request)
-
-    async def on_after_forgot_password(
-        self, user: models.UP, token: str, request: Optional[Request] = None
-    ) -> None:
-        return await super().on_after_forgot_password(user, token, request)
-
-    async def on_after_request_verify(
-        self, user: models.UP, token: str, request: Optional[Request] = None
-    ) -> None:
-        return await super().on_after_request_verify(user, token, request)
+# class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
+#     reset_password_token_secret = database.settings.secret_key
+#     verification_token_secret = database.settings.secret_key
+#
+#     async def on_after_register(
+#         self, user: models.UP, request: Optional[Request] = None
+#     ) -> None:
+#         if settings.auto_verify:
+#
+#         return await super().on_after_register(user, request)
+#
+#     async def on_after_forgot_password(
+#         self, user: models.UP, token: str, request: Optional[Request] = None
+#     ) -> None:
+#         return await super().on_after_forgot_password(user, token, request)
+#
+#     async def on_after_request_verify(
+#         self, user: models.UP, token: str, request: Optional[Request] = None
+#     ) -> None:
+#         return await super().on_after_request_verify(user, token, request)
 
 
 password_helper = PasswordHelper()

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
     httponly: bool = False
+    auto_verify: bool = True  # Верифицируем пользователей автоматически, не проверяя
     model_config = SettingsConfigDict(env_file=".env")
 
 
