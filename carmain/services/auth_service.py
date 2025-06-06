@@ -1,22 +1,17 @@
 import datetime
-from typing import Optional, Any, Annotated
+from typing import Annotated
 
 from fastapi import Depends
-from fastapi_users import BaseUserManager, IntegerIDMixin, models
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend
 from fastapi_users.authentication.strategy import DatabaseStrategy, AccessTokenDatabase
 from fastapi_users.password import PasswordHelper
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from passlib.exc import UnknownHashError
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
-from starlette.requests import Request
 
-from carmain.core import database
-from carmain.models.auth import AccessToken, get_access_token_db, get_async_session
+from carmain.models.auth import AccessToken, get_access_token_db
 from carmain.models.users import User, get_user_db
 from carmain.repository.user_repository import UserRepository
-from carmain.schema.auth_schema import SignUp  # , SignInResponse
+from carmain.schemas.auth_schema import SignUp  # , SignInResponse
 from carmain.services.base_service import BaseService
 from carmain.core.backend import UserManager
 

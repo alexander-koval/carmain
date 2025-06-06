@@ -7,7 +7,7 @@ from carmain.models.users import User
 from carmain.models.vehicles import Vehicle
 from carmain.repository.vehicle_repository import VehicleRepository
 from carmain.routers.v1.auth_router import current_active_verified_user
-from carmain.schema.vehicle_schema import VehicleSchema
+from carmain.schemas.vehicle_schema import VehicleSchema
 from carmain.services.base_service import BaseService
 
 

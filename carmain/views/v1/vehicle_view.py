@@ -1,15 +1,13 @@
 import uuid
-from typing import List
-import datetime
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Form, status
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 
 from carmain.services.vehicle_service import VehicleService
 from carmain.services.maintenance_service import MaintenanceService
-from carmain.schema.vehicle_schema import (
+from carmain.schemas.vehicle_schema import (
     VehicleSchema,
     VehicleCreate,
     VehicleUpdate,

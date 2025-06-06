@@ -2,7 +2,7 @@ from fastapi_users import FastAPIUsers
 
 from carmain.core import backend
 from carmain.models.users import User
-from carmain.schema import user_schema
+from carmain.schemas import user_schema
 
 fastapi_users = FastAPIUsers[User, int](
     backend.get_user_manager, backend.get_backends()
@@ -32,7 +32,7 @@ users_router = fastapi_users.get_users_router(
     user_schema.User, user_schema.UserUpdate, requires_verification=True
 )
 
-# from carmain.schema.auth import SignUp, SignIn
+# from fcarmain.schema.auth import SignUp, SignIn
 # from carmain.services.auth_service import AuthService
 #
 # router = APIRouter(prefix="/auth", tags=["auth"])

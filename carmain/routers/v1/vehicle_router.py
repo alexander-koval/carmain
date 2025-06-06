@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
-from carmain.schema.vehicle_schema import (
+from carmain.schemas.vehicle_schema import (
     VehicleSchema,
     VehicleCreate,
     VehicleUpdate,

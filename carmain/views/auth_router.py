@@ -1,9 +1,8 @@
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Form
+from fastapi import APIRouter, Depends, Request, status, Form
 
 from fastapi_users.authentication import Strategy
 from fastapi_users import models, exceptions
-from fastapi_users.router.common import ErrorCode
 from pydantic import EmailStr
 from starlette.responses import RedirectResponse
 
@@ -14,7 +13,7 @@ from urllib.parse import quote
 
 from carmain.models.users import User
 from carmain.routers.v1.auth_router import current_active_verified_user
-from carmain.schema.user_schema import UserCreate, SignUpFormData
+from carmain.schemas.user_schema import UserCreate, SignUpFormData
 
 auth_view_router = APIRouter(prefix="/auth", tags=["auth"])
 templates = Jinja2Templates(directory="carmain/templates")
