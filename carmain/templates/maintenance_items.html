@@ -14,7 +14,8 @@
             <select class="form-select w-auto me-2" name="vehicle_id"
                     hx-get="/vehicles/{{ vehicle.id }}/maintenance-items"
                     hx-target="#maintenance-items-list"
-                    hx-trigger="change">
+                    hx-trigger="change"
+                    hx-vals='{"page": 1}'>
                 {% for v in user_vehicles %}
                 <option value="{{ v.id }}" {% if v.id== vehicle.id %}selected{% endif %}>
                     {{ v.brand }} {{ v.model }}
@@ -57,6 +58,7 @@
           hx-push-url="true"
           hx-swap="outerHTML"
           class="filters-toolbar mb-4 p-3 bg-light rounded">
+        <input type="hidden" name="page" value="1" id="pageInput">
         <div class="row">
             <div class="col-md-12 d-flex align-items-center justify-content-end">
                 <div class="form-check mb-0">

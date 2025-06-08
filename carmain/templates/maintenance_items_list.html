@@ -71,7 +71,9 @@
             <li class="page-item {% if pagination.current_page == 1 %}disabled{% endif %}">
                 <a class="page-link"
                    href="#"
-                   hx-get="/vehicles/{{ vehicle.id }}/maintenance?page={{ pagination.current_page - 1 }}"
+                   hx-get="/vehicles/{{ vehicle.id }}/maintenance"
+                   hx-vals='{"page": {{ pagination.current_page - 1 }}}'
+                   hx-include="[name='show_all']:checked"
                    hx-target="#maintenance-items-list"
                    hx-swap="outerHTML"
                    hx-push-url="true">
@@ -83,7 +85,9 @@
             <li class="page-item {% if page == pagination.current_page %}active{% endif %}">
                 <a class="page-link"
                    href="#"
-                   hx-get="/vehicles/{{ vehicle.id }}/maintenance?page={{ page }}"
+                   hx-get="/vehicles/{{ vehicle.id }}/maintenance"
+                   hx-vals='{"page": {{ page }}}'
+                   hx-include="[name='show_all']:checked"
                    hx-target="#maintenance-items-list"
                    hx-swap="outerHTML"
                    hx-push-url="true">
@@ -95,7 +99,9 @@
             <li class="page-item {% if pagination.current_page == pagination.total_pages %}disabled{% endif %}">
                 <a class="page-link"
                    href="#"
-                   hx-get="/vehicles/{{ vehicle.id }}/maintenance?page={{ pagination.current_page + 1 }}"
+                   hx-get="/vehicles/{{ vehicle.id }}/maintenance"
+                   hx-vals='{"page": {{ pagination.current_page + 1 }}}'
+                   hx-include="[name='show_all']:checked"
                    hx-target="#maintenance-items-list"
                    hx-swap="outerHTML"
                    hx-push-url="true">

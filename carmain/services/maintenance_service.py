@@ -201,19 +201,6 @@ class MaintenanceService(BaseService):
             show_all: Показать все элементы, включая не требующие обслуживания (по умолчанию False)
         """
 
-        skip = (page - 1) * page_size
-        limit = page_size
-
-        if not show_all:
-            items = await self.maintenance_repository.get_maintenance_items_requiring_service(
-                self.user.id, vehicle_id, skip, limit
-            )
-        else:
-            items = await self.maintenance_repository.get_user_maintenance_items(
-                self.user.id, vehicle_id, skip, limit
-            )
-        total_count = len(items)
-
         vehicle = await self.vehicle_repository.get_vehicle(vehicle_id)
         if not vehicle:
             return [], {
@@ -224,9 +211,42 @@ class MaintenanceService(BaseService):
             }
 
         current_odometer = vehicle.odometer
+        
+        if not show_all:
+            all_items = await self.maintenance_repository.get_maintenance_items_requiring_service(
+                self.user.id, vehicle_id, 0, sys.maxsize
+            )
+        else:
+            all_items = await self.maintenance_repository.get_user_maintenance_items(
+                self.user.id, vehicle_id, 0, sys.maxsize
+            )
+        
+        filtered_items = []
+        for item in all_items:
+            interval = item.custom_interval or item.maintenance_item.default_interval
+            status = MaintenanceItemStatus.OK
+
+            if item.last_service_odometer is None:
+                status = MaintenanceItemStatus.NEVER_SERVICED
+            else:
+                km_since_last_service = current_odometer - item.last_service_odometer
+                if km_since_last_service > interval:
+                    status = MaintenanceItemStatus.OVERDUE
+                elif km_since_last_service > interval * 0.9:
+                    status = MaintenanceItemStatus.UPCOMING
+                else:
+                    if not show_all:
+                        continue
+            filtered_items.append(item)
+        
+        total_count = len(filtered_items)
+        
+        skip = (page - 1) * page_size
+        limit = page_size
+        paginated_items = filtered_items[skip:skip + limit]
 
         display_items = []
-        for item in items:
+        for item in paginated_items:
 
             interval = item.custom_interval or item.maintenance_item.default_interval
 
