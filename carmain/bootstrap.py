@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from carmain.models.items import MaintenanceItem
 from loguru import logger
 
+
 async def create_initial_maintenance_items(session: AsyncSession):
     """
     Check existing MaintenanceItems and create initial
@@ -20,9 +21,9 @@ async def create_initial_maintenance_items(session: AsyncSession):
         MaintenanceItem(name="Трансмиссионное масло", default_interval=80000),
         MaintenanceItem(name="Жидкость ГУР", default_interval=120000),
         MaintenanceItem(name="Масло редуктора", default_interval=75000),
-        MaintenanceItem(name="Масляный фильтр", default_interval=16000),
+        MaintenanceItem(name="Масляный фильтр", default_interval=6000),
         MaintenanceItem(name="Топливный фильтр", default_interval=25000),
-        MaintenanceItem(name="Воздушный фильтр", default_interval=20000),
+        MaintenanceItem(name="Воздушный фильтр", default_interval=6000),
         MaintenanceItem(name="Ремень ГРМ", default_interval=100000),
         MaintenanceItem(name="Антифриз", default_interval=60000),
         MaintenanceItem(name="Тосол", default_interval=60000),

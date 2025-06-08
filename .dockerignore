@@ -50,6 +50,9 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+*.sql
+*_dump_*.sql
+carmain_dump_*.sql
 
 # Logs
 logs/
