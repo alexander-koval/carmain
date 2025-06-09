@@ -18,7 +18,8 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="carmain_dump_${TIMESTAMP}.sql"
 
 echo "Creating database backup: ${BACKUP_FILE}"
-PGPASSWORD=${POSTGRES_PASSWORD} pg_dump -h localhost -U ${POSTGRES_USER} -d ${DB_NAME} > ${BACKUP_FILE}
+PGPASSWORD=XeU4YhJa3A__ pg_dump -h 192.168.33.100 -p 15432 -U ${POSTGRES_USER} -d ${DB_NAME} > ${BACKUP_FILE}
+#PGPASSWORD=${POSTGRES_PASSWORD} pg_dump -h localhost -U ${POSTGRES_USER} -d ${DB_NAME} > ${BACKUP_FILE}
 
 if [ $? -eq 0 ]; then
     echo "Backup created successfully: ${BACKUP_FILE}"
