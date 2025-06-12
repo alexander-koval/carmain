@@ -44,18 +44,32 @@
                         {% endif %}
                     </div>
 
-                    <button class="btn btn-outline-success ms-auto align-self-end"
-                            style="z-index: 2; position: relative; width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; padding: 0; display: flex; align-items: center; justify-content: center;"
-                            data-item-id="{{ item.id }}"
-                            data-item-name="{{ item.name }}"
-                            data-vehicle-id="{{ vehicle.id }}"
-                            data-date="{{ today if today is defined else '' }}"
-                            data-odometer="{{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }}"
-                            onclick="openServiceModal(this)"
-                            data-bs-toggle="modal"
-                            data-bs-target="#serviceModal">
-                        <i class="fas fa-check"></i>
-                    </button>
+                    <div class="btn-group ms-auto align-self-end" style="z-index: 2; position: relative;">
+                        <button class="btn btn-outline-secondary"
+                                style="width: 2.5rem; height: 2.5rem; border-radius: 0.375rem 0 0 0.375rem; padding: 0; display: flex; align-items: center; justify-content: center;"
+                                data-user-item-id="{{ item.id }}"
+                                data-item-name="{{ item.name }}"
+                                data-vehicle-id="{{ vehicle.id }}"
+                                data-custom-interval="{{ item.custom_interval or '' }}"
+                                data-default-interval="{{ item.default_interval }}"
+                                onclick="openIntervalModal(this)"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editIntervalModal">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-success"
+                                style="width: 2.5rem; height: 2.5rem; border-radius: 0 0.375rem 0.375rem 0; padding: 0; display: flex; align-items: center; justify-content: center;"
+                                data-item-id="{{ item.id }}"
+                                data-item-name="{{ item.name }}"
+                                data-vehicle-id="{{ vehicle.id }}"
+                                data-date="{{ today if today is defined else '' }}"
+                                data-odometer="{{ vehicle.odometer if vehicle is defined and vehicle.odometer is defined else 0 }}"
+                                onclick="openServiceModal(this)"
+                                data-bs-toggle="modal"
+                                data-bs-target="#serviceModal">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

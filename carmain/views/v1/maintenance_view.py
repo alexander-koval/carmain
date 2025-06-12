@@ -29,6 +29,7 @@ from carmain.schemas.maintenance_schema import (
     ServiceRecordCreate,
     PaginationParams,
     MaintenanceCategory,
+    UserMaintenanceItemUpdate,
 )
 from carmain.services.maintenance_service import MaintenanceService
 from carmain.services.vehicle_service import VehicleService
@@ -101,6 +102,47 @@ async def maintenance_items_view(
             "user": maintenance_service.user,
             "vehicle": vehicle,
             "user_vehicles": user_vehicles,
+            "maintenance_items": maintenance_items,
+            "pagination": pagination_params,
+            "today": date.today().isoformat(),
+        },
+    )
+
+
+@router.patch("/{vehicle_id}/maintenance")
+async def change_custom_interval(
+    request: Request,
+    vehicle_id: Annotated[uuid.UUID, Path(description="UUID идентификатор автомобиля")],
+    maintenance_service: Annotated[MaintenanceService, Depends()],
+    user_maintenance_item_update: UserMaintenanceItemUpdate = Depends(
+        UserMaintenanceItemUpdate.as_form
+    ),
+):
+    user_item = await maintenance_service.get_user_maintenance_item(user_maintenance_item_update.user_item_id)
+    if not user_item or user_item.vehicle_id != vehicle_id or user_item.user_id != maintenance_service.user.id:
+        raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
+    
+    await maintenance_service.update_user_maintenance_item(user_item.id, user_maintenance_item_update)
+    
+    maintenance_items, pagination = (
+        await maintenance_service.get_items_requiring_service(
+            vehicle_id=vehicle_id,
+            page=1,
+        )
+    )
+
+    pagination_params = PaginationParams(
+        current_page=pagination["current_page"],
+        total_pages=pagination["total_pages"],
+        items_per_page=pagination["items_per_page"],
+        total_items=pagination["total_items"],
+    )
+
+    return templates.TemplateResponse(
+        "maintenance_items_list.html",
+        {
+            "request": request,
+            "vehicle": user_item.vehicle,
             "maintenance_items": maintenance_items,
             "pagination": pagination_params,
             "today": date.today().isoformat(),

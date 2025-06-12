@@ -104,6 +104,20 @@
                 detail: data
             }));
         }
+        
+        function openIntervalModal(button) {
+            const data = {
+                user_item_id: button.dataset.userItemId,
+                name: button.dataset.itemName,
+                vehicle_id: button.dataset.vehicleId,
+                custom_interval: button.dataset.customInterval ? parseInt(button.dataset.customInterval) : null,
+                default_interval: parseInt(button.dataset.defaultInterval) || 0
+            };
+            
+            window.dispatchEvent(new CustomEvent('open-edit-interval-modal', {
+                detail: data
+            }));
+        }
     </script>
     
     {% block scripts %}

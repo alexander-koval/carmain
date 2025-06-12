@@ -213,3 +213,93 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade"
+     id="editIntervalModal"
+     tabindex="-1"
+     aria-labelledby="editIntervalModalLabel"
+     style="display: none"
+     x-data="{
+         userItemId: null,
+         itemName: '',
+         vehicleId: null,
+         customInterval: null,
+         defaultInterval: null
+     }"
+     @open-edit-interval-modal.window="
+         userItemId = $event.detail.user_item_id;
+         itemName = $event.detail.name;
+         vehicleId = $event.detail.vehicle_id;
+         customInterval = $event.detail.custom_interval;
+         defaultInterval = $event.detail.default_interval;
+         $root.querySelector('#editIntervalModalLabel').textContent = 'Настройка интервала: ' + itemName;
+     "
+     x-on:htmx:after-settle.window="function() {
+          const detail = $event.detail;
+          if (detail.elt &&
+              detail.elt.id === 'maintenance-items-list' &&
+              detail.xhr.status >= 200 && detail.xhr.status < 300) {
+              console.log('HTMX request successful, attempting to close interval modal.');
+              const modalEl = document.getElementById('editIntervalModal');
+              if (modalEl && typeof bootstrap !== 'undefined') {
+                  const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                  if (modalInstance) {
+                      modalInstance.hide();
+                  }
+              }
+          }
+      }"
+     @hidden.bs.modal="
+         userItemId = null;
+         itemName = '';
+         vehicleId = null;
+         customInterval = null;
+         defaultInterval = null;
+         $root.querySelector('#editIntervalModalLabel').textContent = 'Настройка интервала';">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning bg-opacity-25">
+                <h5 class="modal-title" id="editIntervalModalLabel">Настройка интервала</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editIntervalForm"
+                      x-bind:hx-patch="userItemId ? '/vehicles/' + vehicleId + '/maintenance' : ''"
+                      hx-target="#maintenance-items-list"
+                      hx-swap="outerHTML">
+                    <input type="hidden" name="user_item_id" x-bind:value="userItemId">
+                    <input type="hidden" name="vehicle_id" x-bind:value="vehicleId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Стандартный интервал</label>
+                        <div class="form-control-plaintext" x-text="defaultInterval + ' км'"></div>
+                        <small class="text-muted">Рекомендуемый интервал для этого типа обслуживания</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="customInterval" class="form-label">Индивидуальный интервал (км)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="customInterval" 
+                               name="custom_interval"
+                               x-model="customInterval"
+                               x-bind:placeholder="defaultInterval"
+                               min="1000"
+                               step="1000">
+                        <small class="text-muted">
+                            Оставьте пустым для использования стандартного интервала
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" form="editIntervalForm" class="btn btn-warning"
+                        hx-indicator="#interval-submit-indicator">
+                    <span id="interval-submit-indicator" class="spinner-border spinner-border-sm htmx-indicator me-1" role="status"></span>
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -55,8 +55,6 @@ class MaintenanceItem(MaintenanceItemBase):
 
 
 class UserMaintenanceItemBase(BaseModel):
-    vehicle_id: int
-    item_id: int
     custom_interval: Optional[int] = None
     last_service_odometer: Optional[int] = None
     last_service_date: Optional[date] = None
@@ -66,10 +64,19 @@ class UserMaintenanceItemCreate(UserMaintenanceItemBase):
     pass
 
 
-class UserMaintenanceItemUpdate(BaseModel):
-    custom_interval: Optional[int] = None
-    last_service_odometer: Optional[int] = None
-    last_service_date: Optional[date] = None
+class UserMaintenanceItemUpdate(UserMaintenanceItemBase):
+    user_item_id: uuid.UUID
+
+    @classmethod
+    def as_form(
+        cls,
+        user_item_id: Annotated[uuid.UUID, Form()],
+        custom_interval: Annotated[Optional[int], Form()] = None,
+    ):
+        return cls(
+            user_item_id=user_item_id,
+            custom_interval=custom_interval,
+        )
 
 
 class UserMaintenanceItem(UserMaintenanceItemBase):
