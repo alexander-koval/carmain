@@ -33,6 +33,11 @@ from carmain.schemas.maintenance_schema import (
 )
 from carmain.services.maintenance_service import MaintenanceService
 from carmain.services.vehicle_service import VehicleService
+from carmain.utils.maintenance_utils import (
+    filter_maintenance_items_by_search,
+    filter_maintenance_items_by_category,
+    get_maintenance_item_icon,
+)
 
 router = APIRouter(prefix="/vehicles", tags=["maintenance"])
 
@@ -56,6 +61,8 @@ async def maintenance_items_view(
     maintenance_service: Annotated[MaintenanceService, Depends()],
     page: int = Query(1, ge=1),
     show_all: bool = False,
+    q: Optional[str] = Query(None, description="Поисковый запрос"),
+    category: Optional[MaintenanceCategory] = Query(None, description="Фильтр по категории"),
 ):
     """
     Отображение деталей, требующих обслуживания для конкретного автомобиля
@@ -71,6 +78,10 @@ async def maintenance_items_view(
             vehicle_id=vehicle_id, page=page, page_size=10, show_all=show_all
         )
     )
+    
+    # Применяем фильтры
+    maintenance_items = filter_maintenance_items_by_search(maintenance_items, q)
+    maintenance_items = filter_maintenance_items_by_category(maintenance_items, category)
 
     pagination_params = PaginationParams(
         current_page=pagination["current_page"],
@@ -234,58 +245,23 @@ async def all_maintenance_items_view(
     )
     tracked_ids = {ui.item_id for ui in user_items}
 
+    # Применяем фильтры
+    filtered_items = filter_maintenance_items_by_search(all_items, q)
+    filtered_items = filter_maintenance_items_by_category(filtered_items, category)
+
     items: List[Dict[str, Any]] = []
-    for mi in all_items:
-
-        if q and q.lower() not in mi.name.lower():
-            continue
-
-        # Фильтрация по категории
-        if category and category != MaintenanceCategory.ALL:
-            name_lower = mi.name.lower()
-            category_match = False
-            if category == MaintenanceCategory.ENGINE and (
-                "масл" in name_lower or "двигател" in name_lower
-            ):
-                category_match = True
-            elif category == MaintenanceCategory.BRAKES and (
-                "тормоз" in name_lower or "колод" in name_lower
-            ):
-                category_match = True
-            elif category == MaintenanceCategory.FILTERS and "фильтр" in name_lower:
-                category_match = True
-            elif category == MaintenanceCategory.BATTERY and (
-                "аккум" in name_lower or "батар" in name_lower
-            ):
-                category_match = True
-
-            if not category_match:
-                continue
-
+    for mi in filtered_items:
         is_tracked = mi.id in tracked_ids
 
         if tracked_only and not is_tracked:
             continue
 
-        name_lower = mi.name.lower()
-        if "масл" in name_lower or "oil" in name_lower:
-            icon = "oil-can"
-        elif "тормоз" in name_lower or "brake" in name_lower:
-            icon = "exclamation-circle"
-        elif "ремень" in name_lower or "грм" in name_lower:
-            icon = "cogs"
-        elif "фильтр" in name_lower or "filter" in name_lower:
-            icon = "filter"
-        elif "аккум" in name_lower or "battery" in name_lower:
-            icon = "car-battery"
-        else:
-            icon = "wrench"
         items.append(
             {
                 "id": mi.id,
                 "name": mi.name,
                 "default_interval": mi.default_interval,
-                "icon": icon,
+                "icon": get_maintenance_item_icon(mi.name),
                 "is_tracked": is_tracked,
             }
         )
@@ -323,24 +299,11 @@ async def track_maintenance_item(
     mi = await maintenance_service.get_maintenance_item(item_id)
     if not mi:
         raise HTTPException(status_code=404, detail="Работа не найдена")
-    name_lower = mi.name.lower()
-    if "масл" in name_lower or "oil" in name_lower:
-        icon = "oil-can"
-    elif "тормоз" in name_lower or "brake" in name_lower:
-        icon = "exclamation-circle"
-    elif "ремень" in name_lower or "грм" in name_lower:
-        icon = "cogs"
-    elif "фильтр" in name_lower or "filter" in name_lower:
-        icon = "filter"
-    elif "аккум" in name_lower or "battery" in name_lower:
-        icon = "car-battery"
-    else:
-        icon = "wrench"
     item = {
         "id": mi.id,
         "name": mi.name,
         "default_interval": mi.default_interval,
-        "icon": icon,
+        "icon": get_maintenance_item_icon(mi.name),
         "is_tracked": True,
     }
     return templates.TemplateResponse(
@@ -373,24 +336,11 @@ async def untrack_maintenance_item(
     mi = await maintenance_service.get_maintenance_item(item_id)
     if not mi:
         raise HTTPException(status_code=404, detail="Работа не найдена")
-    name_lower = mi.name.lower()
-    if "масл" in name_lower or "oil" in name_lower:
-        icon = "oil-can"
-    elif "тормоз" in name_lower or "brake" in name_lower:
-        icon = "exclamation-circle"
-    elif "ремень" in name_lower or "грм" in name_lower:
-        icon = "cogs"
-    elif "фильтр" in name_lower or "filter" in name_lower:
-        icon = "filter"
-    elif "аккум" in name_lower or "battery" in name_lower:
-        icon = "car-battery"
-    else:
-        icon = "wrench"
     item = {
         "id": mi.id,
         "name": mi.name,
         "default_interval": mi.default_interval,
-        "icon": icon,
+        "icon": get_maintenance_item_icon(mi.name),
         "is_tracked": False,
     }
     return templates.TemplateResponse(

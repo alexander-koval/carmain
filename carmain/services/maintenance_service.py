@@ -27,6 +27,7 @@ from carmain.schemas.maintenance_schema import (
 )
 from carmain.services.base_service import BaseService
 from carmain.routers.v1.auth_router import current_active_verified_user
+from carmain.utils.maintenance_utils import get_maintenance_item_type
 
 
 class MaintenanceService(BaseService):
@@ -274,21 +275,7 @@ class MaintenanceService(BaseService):
                     overdue_km = None
                     remaining_km = interval - km_since_last_service
 
-            item_type = MaintenanceItemType.OTHER
-            item_name = item.maintenance_item.name.lower()
-
-            if "масл" in item_name:
-                item_type = MaintenanceItemType.OIL_CHANGE
-            elif "тормоз" in item_name or "колод" in item_name:
-                item_type = MaintenanceItemType.BRAKE_PADS
-            elif "ремен" in item_name or "грм" in item_name:
-                item_type = MaintenanceItemType.TIMING_BELT
-            elif "фильтр" in item_name and (
-                "воздух" in item_name or "воздуш" in item_name
-            ):
-                item_type = MaintenanceItemType.AIR_FILTER
-            elif "аккумулятор" in item_name or "батар" in item_name:
-                item_type = MaintenanceItemType.BATTERY
+            item_type = get_maintenance_item_type(item.maintenance_item.name)
 
             last_service_date = None
             if item.last_service_date:
