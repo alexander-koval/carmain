@@ -15,7 +15,7 @@
         <h2>Детали, требующие обслуживания</h2>
         {% if user_vehicles|length > 1 %}
         <div class="d-flex align-items-center">
-            <select class="form-select w-auto me-2" name="vehicle_id"
+            <select class="form-select me-2" name="vehicle_id"
                     hx-get="/vehicles/{{ vehicle.id }}/maintenance-items"
                     hx-target="#maintenance-items-list"
                     hx-trigger="change"

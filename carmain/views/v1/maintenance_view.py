@@ -62,7 +62,9 @@ async def maintenance_items_view(
     page: int = Query(1, ge=1),
     show_all: bool = False,
     q: Optional[str] = Query(None, description="Поисковый запрос"),
-    category: Optional[MaintenanceCategory] = Query(None, description="Фильтр по категории"),
+    category: Optional[MaintenanceCategory] = Query(
+        None, description="Фильтр по категории"
+    ),
 ):
     """
     Отображение деталей, требующих обслуживания для конкретного автомобиля
@@ -78,10 +80,12 @@ async def maintenance_items_view(
             vehicle_id=vehicle_id, page=page, page_size=10, show_all=show_all
         )
     )
-    
+
     # Применяем фильтры
     maintenance_items = filter_maintenance_items_by_search(maintenance_items, q)
-    maintenance_items = filter_maintenance_items_by_category(maintenance_items, category)
+    maintenance_items = filter_maintenance_items_by_category(
+        maintenance_items, category
+    )
 
     pagination_params = PaginationParams(
         current_page=pagination["current_page"],
@@ -129,12 +133,20 @@ async def change_custom_interval(
         UserMaintenanceItemUpdate.as_form
     ),
 ):
-    user_item = await maintenance_service.get_user_maintenance_item(user_maintenance_item_update.user_item_id)
-    if not user_item or user_item.vehicle_id != vehicle_id or user_item.user_id != maintenance_service.user.id:
+    user_item = await maintenance_service.get_user_maintenance_item(
+        user_maintenance_item_update.user_item_id
+    )
+    if (
+        not user_item
+        or user_item.vehicle_id != vehicle_id
+        or user_item.user_id != maintenance_service.user.id
+    ):
         raise HTTPException(status_code=404, detail="Элемент обслуживания не найден")
-    
-    await maintenance_service.update_user_maintenance_item(user_item.id, user_maintenance_item_update)
-    
+
+    await maintenance_service.update_user_maintenance_item(
+        user_item.id, user_maintenance_item_update
+    )
+
     maintenance_items, pagination = (
         await maintenance_service.get_items_requiring_service(
             vehicle_id=vehicle_id,
@@ -161,7 +173,6 @@ async def change_custom_interval(
     )
 
 
-# @router.post("/{vehicle_id}/maintenance-items/{item_id}/service")
 @router.post("/{vehicle_id}/maintenance")
 async def mark_item_as_serviced(
     request: Request,
@@ -174,10 +185,11 @@ async def mark_item_as_serviced(
     """
     item = await maintenance_service.mark_item_as_serviced(service_record_create)
 
-    referer = request.headers.get("Referer", "")
-
-    if f"/vehicles/{vehicle_id}/maintenance-items/{item.id}" in referer:
-
+    is_htmx = request.headers.get("HX-Request") == "true"
+    is_service_records_container = (
+        is_htmx and request.headers.get("HX-Target") == "service-records-container"
+    )
+    if is_service_records_container:
         records = await maintenance_service.get_service_records(item.id)
         sorted_records = sorted(records, key=lambda x: x.service_date, reverse=True)
 

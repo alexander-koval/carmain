@@ -136,7 +136,7 @@ class MaintenanceService(BaseService):
         """Отметить элемент как обслуженный"""
 
         item: UserMaintenanceItem = await self.user_maintenance_repository.get_by_id(
-            service_record_create.user_item_id
+            service_record_create.user_item_id, eager=True
         )
         if not item or item.user_id != self.user.id:
             raise HTTPException(
@@ -163,6 +163,7 @@ class MaintenanceService(BaseService):
         await self.record_repository.create(db_record)
 
         user_maintenance_item_update = UserMaintenanceItemUpdate(
+            user_item_id=item.id,
             last_service_odometer=service_record_create.service_odometer,
             last_service_date=service_record_create.service_date,
         )
@@ -174,7 +175,11 @@ class MaintenanceService(BaseService):
                 item.id, maintenance_item_payload
             )
         )
-        return db_item
+
+        updated_item = await self.user_maintenance_repository.get_by_id(
+            item.id, eager=True
+        )
+        return updated_item
 
     async def get_items_requiring_service_count(self, vehicle_id: uuid.UUID) -> int:
         items = (
@@ -212,7 +217,7 @@ class MaintenanceService(BaseService):
             }
 
         current_odometer = vehicle.odometer
-        
+
         if not show_all:
             all_items = await self.maintenance_repository.get_maintenance_items_requiring_service(
                 self.user.id, vehicle_id, 0, sys.maxsize
@@ -221,7 +226,7 @@ class MaintenanceService(BaseService):
             all_items = await self.maintenance_repository.get_user_maintenance_items(
                 self.user.id, vehicle_id, 0, sys.maxsize
             )
-        
+
         filtered_items = []
         for item in all_items:
             interval = item.custom_interval or item.maintenance_item.default_interval
@@ -239,12 +244,12 @@ class MaintenanceService(BaseService):
                     if not show_all:
                         continue
             filtered_items.append(item)
-        
+
         total_count = len(filtered_items)
-        
+
         skip = (page - 1) * page_size
         limit = page_size
-        paginated_items = filtered_items[skip:skip + limit]
+        paginated_items = filtered_items[skip : skip + limit]
 
         display_items = []
         for item in paginated_items:

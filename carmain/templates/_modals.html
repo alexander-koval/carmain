@@ -147,8 +147,9 @@
      "
      x-on:htmx:after-settle.window="function() {
           const detail = $event.detail;
-          console.log(`RECORD_ID: ${recordId} ${itemId} DETAIL: ${detail.elt.id} ${detail.elt.id}`);
+          console.log(`RECORD_ID: ${recordId} ${itemId} DETAIL: ${detail.elt.id}`);
           if (detail.elt &&
+              detail.elt.id === 'service-records-container' &&
               detail.xhr.status >= 200 && detail.xhr.status < 300) {
               console.log('HTMX request successful, attempting to close edit modal.');
               const modalEl = document.getElementById('editServiceRecordModal');
