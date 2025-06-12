@@ -42,7 +42,7 @@ Carmain - веб-приложение для управления техниче
 
 ```bash
 # Клонирование репозитория
-git clone https://github.com/yourusername/carmain.git
+git clone https://github.com/alexander-koval/carmain.git
 cd carmain
 
 # Запуск среды разработки
