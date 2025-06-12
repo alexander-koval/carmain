@@ -62,6 +62,21 @@
                 margin: 0 2px;
             }
         }
+
+        .pagination .page-link {
+            color: #333;
+            border-color: #ddd;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #ffe216;
+            border-color: #ffe216;
+            color: #333;
+        }
+        .pagination .page-link:hover {
+            background-color: #fff3cd;
+            border-color: #ffe216;
+            color: #333;
+        }
     </style>
     {% block styles %}
     <link rel="stylesheet" href="/static/css/maintenance-directory.css">
