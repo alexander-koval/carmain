@@ -44,8 +44,8 @@
                         {% endif %}
                     </div>
 
-                    <button class="btn btn-sm btn-outline-success ms-2"
-                            style="z-index: 2; position: relative;"
+                    <button class="btn btn-outline-success ms-auto align-self-end"
+                            style="z-index: 2; position: relative; width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; padding: 0; display: flex; align-items: center; justify-content: center;"
                             data-item-id="{{ item.id }}"
                             data-item-name="{{ item.name }}"
                             data-vehicle-id="{{ vehicle.id }}"
@@ -54,9 +54,7 @@
                             onclick="openServiceModal(this)"
                             data-bs-toggle="modal"
                             data-bs-target="#serviceModal">
-                        <span style="white-space: nowrap;">
-                            <i class="fas fa-check me-1"></i> Обслужено
-                        </span>
+                        <i class="fas fa-check"></i>
                     </button>
                 </div>
             </div>
