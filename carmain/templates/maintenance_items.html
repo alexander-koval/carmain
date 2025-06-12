@@ -4,6 +4,10 @@
 Детали, требующие обслуживания - Carmain
 {% endblock %}
 
+{% block back_button %}
+{% include '_back_button.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
 
@@ -44,9 +48,6 @@
                         <span>Пробег: {{ vehicle.odometer }} км</span>
                     </div>
                 </div>
-                <a href="/" class="btn btn-outline-secondary btn-sm ms-auto">
-                    <i class="fas fa-arrow-left me-1"></i> Вернуться к автомобилям
-                </a>
             </div>
         </div>
     </div>
