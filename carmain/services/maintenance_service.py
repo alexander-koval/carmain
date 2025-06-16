@@ -63,7 +63,7 @@ class MaintenanceService(BaseService):
         self, item_data: Dict[str, Any]
     ) -> MaintenanceItem:
         """Создать новый тип обслуживания"""
-        db_item = MaintenanceItem(user_id=self.user.id, **item_data)
+        db_item = MaintenanceItem(**item_data)
         return await self.maintenance_repository.create(db_item)
 
     async def get_user_vehicles(self) -> List[Vehicle]:
@@ -143,7 +143,7 @@ class MaintenanceService(BaseService):
                 status_code=404, detail="Элемент обслуживания не найден"
             )
 
-        if service_record_create.service_odometer is None:
+        if service_record_create.service_odometer is None or service_record_create.service_odometer == 0:
             if item.vehicle:
                 service_record_create.service_odometer = item.vehicle.odometer
 
