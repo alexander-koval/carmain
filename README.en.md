@@ -51,16 +51,16 @@ Carmain is a modern web application for vehicle maintenance management that allo
    # Edit .env with your database credentials
    ```
 
-4. **Run with Docker (recommended)**
+4. **Start database**
    ```bash
    make dev
    # or
    docker-compose -f docker-compose.dev.yml up --build
    ```
 
-5. **Or run locally**
+5. **Run application (in separate terminal)**
    ```bash
-   poetry run uvicorn carmain.main:carmain --reload
+   poetry run uvicorn carmain.main:carmain --reload --host 0.0.0.0 --port 8000
    ```
 
 ### Production Deployment
