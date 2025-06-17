@@ -164,6 +164,8 @@ cython_debug/
 .idea/
 migrations/
 !migrations/env.py
+!migrations/versions/324bd1152169_initial_schema.py
+
 *.db
 
 # Database dumps
