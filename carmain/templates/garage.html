@@ -198,7 +198,10 @@
     </div>
 
 
-    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel">
+    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" 
+         x-data="{ modalOpen: false }"
+         @hidden.bs.modal="modalOpen = false; $nextTick(() => { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; document.body.style.paddingRight = ''; })"
+         @show.bs.modal="modalOpen = true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -206,7 +209,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="addCarModalBody">
-                    <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML">
+                    <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML"
+                          @htmx:before-request="const modal = bootstrap.Modal.getInstance($el.closest('.modal')); if (modal) modal.hide();"
+                          @htmx:after-swap.window="$nextTick(() => { document.body.classList.remove('modal-open'); document.body.style.overflow = ''; document.body.style.paddingRight = ''; })">
                         <div class="mb-3">
                             <label for="brand" class="form-label">Марка</label>
                             <input type="text" class="form-control" id="brand" name="brand" required>
@@ -375,6 +380,10 @@
     
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Принудительно очищаем modal-open класс при загрузке страницы
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
 
         var carouselElement = document.getElementById('garageCarousel');
         if (carouselElement) {
@@ -421,6 +430,7 @@
                 }
             });
         }
+        
     });
 </script>
 {% endblock %}
