@@ -38,25 +38,13 @@ Carmain - веб-приложение для управления техниче
 
 ## Быстрый старт
 
-### Установка через Docker (рекомендуется)
+### Установка для разработки
 
 ```bash
 # Клонирование репозитория
 git clone https://github.com/alexander-koval/carmain.git
 cd carmain
 
-# Запуск среды разработки
-make dev
-
-# Или запуск продакшн-версии
-make build-prod && make up-prod
-```
-
-Приложение будет доступно по адресу: `http://localhost:8000`
-
-### Локальная установка
-
-```bash
 # Установка зависимостей
 poetry install
 
@@ -64,8 +52,23 @@ poetry install
 cp .env.example .env
 # Отредактируйте .env с настройками базы данных
 
+# Запуск базы данных
+make dev
+
+# В отдельном терминале - выполнение миграций
+poetry run alembic upgrade head
+
 # Запуск приложения
-poetry run uvicorn carmain.main:carmain --reload
+poetry run uvicorn carmain.main:carmain --reload --host 0.0.0.0 --port 8000
+```
+
+Приложение будет доступно по адресу: `http://localhost:8000`
+
+### Продакшн развертывание
+
+```bash
+# Запуск продакшн-версии
+make build-prod && make up-prod
 ```
 
 ## Команды разработки
@@ -84,11 +87,17 @@ make clean         # Очистить контейнеры
 Основные переменные в `.env`:
 
 ```env
-SECRET_KEY=your-secret-key
-DB_NAME=carmain_db
-POSTGRES_USER=carmain_user
-POSTGRES_PASSWORD=secure_password
-ADMIN_EMAIL=admin@example.com
+# Application settings
+APP_NAME=Car Maintenance
+ADMIN_EMAIL=admin@yourdomain.com
+SECRET_KEY=your-super-secret-key-here-generate-with-openssl-rand-hex-32
+
+# Database settings (for development with localhost)
+DB_NAME=carmain
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=carmain
+POSTGRES_PASSWORD=your-strong-password-here
 ```
 
 ## Лицензия
