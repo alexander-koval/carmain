@@ -40,7 +40,6 @@
                 justify-content: center;
                 margin-bottom: 1rem;
                 border-radius: 4px;
-                overflow: hidden;
             }
             .car-model {
                 font-weight: 600;
@@ -198,109 +197,12 @@
     </div>
 
 
-    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCarModalLabel">Добавить новый автомобиль</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="addCarModalBody">
-                    <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML">
-                        <div class="mb-3">
-                            <label for="brand" class="form-label">Марка</label>
-                            <input type="text" class="form-control" id="brand" name="brand" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="model" class="form-label">Модель</label>
-                            <input type="text" class="form-control" id="model" name="model" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="year" class="form-label">Год выпуска</label>
-                            <input type="number" class="form-control" id="year" name="year" required min="1900" max="2030">
-                        </div>
-                        <div class="mb-3">
-                            <label for="odometer" class="form-label">Текущий пробег (км)</label>
-                            <input type="number" class="form-control" id="odometer" name="odometer" required min="0">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="submit" class="btn btn-carmain">Сохранить</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="modal fade" id="editCarModal" tabindex="-1" aria-labelledby="editCarModalLabel">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header" style="background-color: #e6f2ff;">
-                    <h5 class="modal-title" id="editCarModalLabel">Редактировать автомобиль</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="editVehicleForm">
-                        <input type="hidden" id="edit_vehicle_id" value="">
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Марка и модель</label>
-                            <p class="form-control-plaintext fw-bold" id="edit_brand_model"></p>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="edit_year" class="form-label">Год выпуска</label>
-                            <input type="number" class="form-control" id="edit_year" required min="1900" max="2030">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="edit_odometer" class="form-label">Текущий пробег (км)</label>
-                            <input type="number" class="form-control" id="edit_odometer" required min="0">
-                        </div>
-                        
-                        <input type="hidden" id="edit_brand">
-                        <input type="hidden" id="edit_model">
-                        
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="button" id="updateVehicleBtn" class="btn btn-carmain">Обновить данные</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Подтверждение удаления</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="confirmDeleteModalBody">
-                    <p>Вы уверены, что хотите удалить этот автомобиль?</p>
-                    <p class="text-danger"><small>Это действие нельзя отменить.</small></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
-                </div>
-            </div>
-        </div>
-    </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Font Awesome уже подключен в базовом шаблоне
-    
-
-    function editVehicle(id, brand, model, year, odometer) {
-        console.log('Editing vehicle:', id, brand, model, year, odometer);
+    function editVehicle(id, brand, model, year, odometer, photo) {
+        console.log('Editing vehicle:', id, brand, model, year, odometer, photo);
         
 
         document.getElementById('edit_vehicle_id').value = id;
@@ -309,6 +211,13 @@
         document.getElementById('edit_brand_model').textContent = brand + ' ' + model;
         document.getElementById('edit_year').value = year;
         document.getElementById('edit_odometer').value = odometer;
+        
+        var photoPreview = document.getElementById('current_photo_preview');
+        if (photo) {
+            photoPreview.innerHTML = '<img src="/media/' + photo + '" alt="Текущее фото" class="img-thumbnail" style="max-height: 100px;">';
+        } else {
+            photoPreview.innerHTML = '<small class="text-muted">Фото не загружено</small>';
+        }
         
 
         var updateBtn = document.getElementById('updateVehicleBtn');
@@ -319,35 +228,22 @@
         }
         
 
-        updateBtn._vehicleUpdateHandler = function() {
-
-            const vehicleData = {
-                vehicle_id: id,
-                brand: brand,
-                model: model,
-                year: document.getElementById('edit_year').value,
-                odometer: document.getElementById('edit_odometer').value
-            };
-            
-            console.log('Updating vehicle with data:', vehicleData);
-            
-
-            htmx.ajax('PATCH', '/vehicles/' + id + '/update', {
-                target: '#vehicle-card-' + id,
-                swap: 'outerHTML',
-                values: vehicleData,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editCarModal'));
-            modal.hide();
-        };
+        var editForm = document.getElementById('editVehicleForm');
+        editForm.setAttribute('hx-patch', '/vehicles/' + id + '/update');
+        editForm.setAttribute('hx-target', '#vehicle-card-' + id);
+        editForm.setAttribute('hx-swap', 'outerHTML');
         
-
-        updateBtn.addEventListener('click', updateBtn._vehicleUpdateHandler);
+        // Удалить старый обработчик если есть
+        if (updateBtn._vehicleUpdateHandler) {
+            updateBtn.removeEventListener('click', updateBtn._vehicleUpdateHandler);
+        }
+        
+        editForm.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.xhr.status === 200) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editCarModal'));
+                modal.hide();
+            }
+        });
         
         console.log('Update button configured for vehicle ID:', id);
     }

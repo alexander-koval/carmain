@@ -1,0 +1,176 @@
+    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCarModalLabel">Добавить новый автомобиль</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="addCarModalBody">
+                    <form id="vehicleForm" hx-post="/vehicles/create" hx-target="body" hx-swap="outerHTML" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="brand" class="form-label">Марка</label>
+                            <input type="text" class="form-control" id="brand" name="brand" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="model" class="form-label">Модель</label>
+                            <input type="text" class="form-control" id="model" name="model" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="year" class="form-label">Год выпуска</label>
+                            <input type="number" class="form-control" id="year" name="year" required min="1900" max="2030">
+                        </div>
+                        <div class="mb-3">
+                            <label for="odometer" class="form-label">Текущий пробег (км)</label>
+                            <input type="number" class="form-control" id="odometer" name="odometer" required min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Фото автомобиля</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <div class="form-text">Выберите изображение (JPEG, PNG, GIF)</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-carmain">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade"
+         id="editCarModal"
+         tabindex="-1"
+         aria-labelledby="editCarModalLabel"
+         x-data="{
+             vehicleId: null,
+             vehicleBrand: null,
+             vehicleModel: null,
+             vehicleYear: null,
+             vehicleOdometer: 0,
+             vehiclePhoto: ''
+         }"
+         @open-edit-vehicle-modal.window="
+             vehicleId = $event.detail.vehicle_id;
+             vehicleBrand = $event.detail.brand;
+             vehicleModel = $event.detail.model;
+             vehicleYear = $event.detail.year;
+             vehicleOdometer = $event.detail.odometer || 0;
+             vehiclePhoto = $event.detail.photo || '';
+
+             Alpine.nextTick(() => {
+                 const formElement = document.getElementById('editVehicleForm');
+                 if (formElement) {
+                     console.log('Current hx-post on FORM after Alpine update:', formElement.getAttribute('hx-post'));
+                     if (htmx) {
+                         htmx.process(formElement);
+                         console.log('HTMX processed form element.');
+                     } else {
+                         console.error('htmx is not defined on window or globally.');
+                     }
+                 } else {
+                     console.error('Form element #serviceForm not found!');
+                 }
+             });
+         "
+         x-on:htmx:after-settle.window="function() {
+              const detail = $event.detail;
+              if (detail.elt &&
+                  detail.xhr.status >= 200 && detail.xhr.status < 300) {
+                  console.log('HTMX request successful, attempting to close modal.');
+                  const modalEl = document.getElementById('editCarModal');
+                  if (modalEl && typeof bootstrap !== 'undefined') {
+                      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                      if (modalInstance) {
+                          modalInstance.hide();
+                      }
+                  }
+              }
+          }"
+         @hidden.bs.modal="
+             vehicleId = null;
+             vehicleBrand = null;
+             vehicleModel = null;
+             vehicleYear = 0;
+             vehicleOdometer = 0;
+             vehiclePhoto = '';
+             console.log(`VEHICLE_ID: ${vehicleId}`);
+             $root.querySelector('#editCarModalLabel').textContent = 'Редактировать автомобиль';
+             Alpine.nextTick(() => {
+                 const formElement = document.getElementById('editVehicleForm');
+                 if (formElement) {
+                     console.log('hx-post on form after modal hide:', formElement.getAttribute('hx-post'));
+                     if (htmx) htmx.process(formElement);
+                 }
+             });">
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #e6f2ff;">
+                    <h5 class="modal-title" id="editCarModalLabel">Редактировать автомобиль</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editVehicleForm"
+                          x-bind:hx-patch="vehicleId ? '/vehicles/' + vehicleId + '/update' : ''"
+                          x-bind:hx-target="vehicleId ? '#vehicle-card-' + vehicleId : 'body'"
+                          hx-swap="outerHTML"
+                          enctype="multipart/form-data">
+                        <input type="hidden" name="vehicle_id" x-bind:value="vehicleId">
+                        <input type="hidden" name="brand" x-bind:value="vehicleBrand">
+                        <input type="hidden" name="model" x-bind:value="vehicleModel">
+
+                        <div class="mb-3">
+                            <label class="form-label">Марка и модель</label>
+                            <p class="form-control-plaintext fw-bold" id="brandModel" x-text="`${vehicleBrand} ${vehicleModel}`"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicleYear" class="form-label">Год выпуска</label>
+                            <input type="number" class="form-control" id="vehicleYear" name="year" min="1900" max="2030"
+                                   x-model="vehicleYear" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_odometer" class="form-label">Текущий пробег (км)</label>
+                            <input type="number" class="form-control" id="edit_odometer" name="odometer" min="0"
+                                   x-model="vehicleOdometer" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_photo" class="form-label">Фото автомобиля</label>
+                            <input type="file" class="form-control" id="edit_photo" name="photo" accept="image/*">
+                            <div class="form-text">Выберите новое изображение (оставьте пустым, чтобы не изменять)</div>
+                            <div id="current_photo_preview" class="mt-2"></div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" id="updateVehicleBtn" class="btn btn-carmain">Обновить данные</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmDeleteModalBody">
+                    <p>Вы уверены, что хотите удалить этот автомобиль?</p>
+                    <p class="text-danger"><small>Это действие нельзя отменить.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>

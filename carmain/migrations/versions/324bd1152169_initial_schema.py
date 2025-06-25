@@ -65,6 +65,7 @@ def upgrade() -> None:
         sa.Column("model", sa.String(length=50), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("odometer", sa.Integer(), nullable=False),
+        sa.Column("photo", sa.String(length=512), nullable=True),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["user.id"],

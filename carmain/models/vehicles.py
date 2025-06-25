@@ -5,6 +5,7 @@ from sqlalchemy import Uuid, Integer, ForeignKey, String, Date, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from carmain.core.database import Base
 from carmain.models.users import User
+from typing import Optional
 
 
 class Vehicle(Base):
@@ -20,6 +21,7 @@ class Vehicle(Base):
     model: Mapped[str] = mapped_column(String(256))
     year: Mapped[int] = mapped_column(Integer)
     odometer: Mapped[int] = mapped_column(Integer)
+    photo: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     user: Mapped[User] = relationship(back_populates="vehicles")
     maintenance_items: Mapped[list["UserMaintenanceItem"]] = relationship(
         back_populates="vehicle"

@@ -15,6 +15,7 @@ from carmain.admin.users import UserAdmin, AccessTokenAdmin
 from carmain.admin.vehicles import VehicleAdmin
 from carmain.bootstrap import create_initial_maintenance_items
 from carmain.core import database
+from carmain.core.config import get_settings
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
 from carmain.views import auth_router as auth_view_router
@@ -47,7 +48,9 @@ async def lifespan(app: FastAPI):
 
 carmain = FastAPI(title="Carmain", debug=True, lifespan=lifespan)
 
-carmain.mount("/static", StaticFiles(directory="carmain/static"), name="static")
+settings = get_settings()
+carmain.mount("/static", StaticFiles(directory=settings.static_path), name="static")
+carmain.mount("/media", StaticFiles(directory=settings.media_path), name="media")
 
 admin = Admin(carmain, engine=database.engine)
 admin.add_view(UserAdmin)

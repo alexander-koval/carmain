@@ -41,8 +41,8 @@
 
      x-on:htmx:after-settle.window="function() {
           const detail = $event.detail;
-          if (detail.elt && 
-              (detail.elt.id === 'maintenance-items-list' || detail.elt.id === 'service-records-container') && 
+          if (detail.elt &&
+              (detail.elt.id === 'maintenance-items-list' || detail.elt.id === 'service-records-container') &&
               detail.xhr.status >= 200 && detail.xhr.status < 300) {
               console.log('HTMX request successful, attempting to close modal.');
               const modalEl = document.getElementById('serviceModal');

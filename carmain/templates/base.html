@@ -98,8 +98,8 @@
     </div>
 
 
-    {% include '_modals.html' %}
-
+    {% include '_service_modals.html' %}
+    {% include '_vehicle_modals.html' %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // HTMX расширения
@@ -133,6 +133,23 @@
                 detail: data
             }));
         }
+
+        function openEditVehicleModal(button) {
+            const data = {
+                vehicle_id: button.dataset.vehicleId,
+                brand: button.dataset.brand,
+                model: button.dataset.model,
+                year: button.dataset.year,
+                odometer: parseInt(button.dataset.odometer) || 0
+            };
+
+            console.log(`OPEN_EDIT_VEHICLE_MODAL ${JSON.stringify(data)}`)
+
+            window.dispatchEvent(new CustomEvent('open-edit-vehicle-modal', {
+                detail: data
+            }));
+        }
+
     </script>
     
     {% block scripts %}

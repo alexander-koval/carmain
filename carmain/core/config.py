@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     postgres_password: str
     httponly: bool = False
     auto_verify: bool = True  # Верифицируем пользователей автоматически, не проверяя
+    static_path: str = "carmain/static"
+    media_path: str = "carmain/media"
     model_config = SettingsConfigDict(env_file=".env")
 
 

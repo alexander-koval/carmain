@@ -1,12 +1,14 @@
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Form, status, UploadFile, File, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 
 from carmain.services.vehicle_service import VehicleService
 from carmain.services.maintenance_service import MaintenanceService
+from carmain.services.file_service import FileService
 from carmain.schemas.vehicle_schema import (
     VehicleSchema,
     VehicleCreate,
@@ -58,12 +60,31 @@ async def create(
     model: str = Form(...),
     year: int = Form(...),
     odometer: int = Form(...),
+    photo: UploadFile = File(None),
     vehicle_service: VehicleService = Depends(),
+    file_service: FileService = Depends(),
     user: User = Depends(current_active_verified_user),
 ):
     try:
+        photo_path = None
+        if photo and photo.filename:
+            try:
+                photo_path = await file_service.save_vehicle_photo(photo)
+            except ValueError as e:
+                return templates.TemplateResponse(
+                    request=request,
+                    name="error_partial.html",
+                    context={"error": f"Ошибка загрузки фото: {str(e)}"},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
         vehicle_data = VehicleCreate(
-            brand=brand, model=model, year=year, odometer=odometer, user_id=user.id
+            brand=brand,
+            model=model,
+            year=year,
+            odometer=odometer,
+            photo=photo_path,
+            user_id=user.id,
         )
 
         await vehicle_service.add(vehicle_data)
@@ -82,20 +103,35 @@ async def create(
 async def update(
     request: Request,
     obj_id: uuid.UUID,
-    year: int = Form(...),
-    odometer: int = Form(...),
-    brand: str = Form(...),
-    model: str = Form(...),
+    vehicle_update: VehicleUpdate = Depends(VehicleUpdate.as_form),
+    photo: Optional[UploadFile] = File(None),
     vehicle_service: VehicleService = Depends(),
     maintenance_service: MaintenanceService = Depends(),
+    file_service: FileService = Depends(),
     user: User = Depends(current_active_verified_user),
 ):
     try:
-        vehicle_data = VehicleUpdate(
-            brand=brand, model=model, year=year, odometer=odometer
-        )
+        vehicle = await vehicle_service.get_by_id(obj_id)
+        if not vehicle or vehicle.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Автомобиль не найден")
 
-        updated_vehicle = await vehicle_service.patch(obj_id, vehicle_data)
+        photo_path = vehicle.photo
+
+        if photo and photo.filename:
+            try:
+                if vehicle.photo:
+                    file_service.delete_vehicle_photo(photo)
+
+                photo_path = await file_service.save_vehicle_photo(photo)
+            except ValueError as e:
+                return templates.TemplateResponse(
+                    request=request,
+                    name="error_partial.html",
+                    context={"error": f"Ошибка загрузки фото: {str(e)}"},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+        vehicle_update.photo = photo_path
+        updated_vehicle = await vehicle_service.patch(obj_id, vehicle_update)
 
         service_requiring = {
             updated_vehicle.id.hex: await maintenance_service.get_items_requiring_service_count(
