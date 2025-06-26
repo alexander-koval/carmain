@@ -23,13 +23,13 @@ optional_user = fastapi_users.current_user(optional=True)
 
 auth_router = fastapi_users.get_auth_router(backend.cookie_backend)
 register_router = fastapi_users.get_register_router(
-    user_schema.User, user_schema.UserCreate
+    user_schema.UserSchema, user_schema.UserCreate
 )
-verify_router = fastapi_users.get_verify_router(user_schema.User)
+verify_router = fastapi_users.get_verify_router(user_schema.UserSchema)
 reset_password_router = fastapi_users.get_reset_password_router()
 
 users_router = fastapi_users.get_users_router(
-    user_schema.User, user_schema.UserUpdate, requires_verification=True
+    user_schema.UserSchema, user_schema.UserUpdate, requires_verification=True
 )
 
 # from fcarmain.schema.auth import SignUp, SignIn

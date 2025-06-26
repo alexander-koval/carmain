@@ -18,7 +18,22 @@ class VehicleSchema(BaseModel):
 
 
 class VehicleCreate(VehicleSchema):
-    user_id: int
+    user_id: Optional[int] = None
+
+    @classmethod
+    def as_form(
+        cls,
+        brand: Annotated[str, Form()],
+        model: Annotated[str, Form()],
+        year: Annotated[int, Form()],
+        odometer: Annotated[int, Form()],
+    ) -> Self:
+        return cls(
+            brand=brand,
+            model=model,
+            year=year,
+            odometer=odometer,
+        )
 
 
 class VehicleFind(PartialModelMixin, VehicleSchema):

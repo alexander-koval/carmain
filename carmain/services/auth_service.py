@@ -75,7 +75,7 @@ class AuthService(BaseService):
             get_strategy=get_database_strategy,
         )
         self.strategy = strategy
-        super().__init__(user_repository)
+        super().__init__()
 
     async def sign_in(self, user_info):
         user: User = await self.user_repository.get_by_email(user_info)

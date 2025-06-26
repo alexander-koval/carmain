@@ -3,11 +3,11 @@ from pydantic import BaseModel, EmailStr
 from fastapi_users import schemas
 
 
-class User(schemas.BaseUser[int]):
+class UserSchema(schemas.BaseUser[int]):
     pass
 
 
-class UserRead(User):
+class UserRead(UserSchema):
     pass
 
 

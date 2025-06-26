@@ -80,7 +80,7 @@ async def signup_action(
     user_create = UserCreate(email=form_data.email, password=form_data.password)
     try:
         await user_manager.create(user_create, safe=True, request=request)
-    except exceptions.UserAlreadyExists as e:
+    except exceptions.UserAlreadyExists:
         return templates.TemplateResponse(
             "signup.html", {"request": request, "error": "Account already exists"}
         )

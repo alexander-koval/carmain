@@ -19,11 +19,11 @@ import os
 settings = get_settings()
 
 # Use DATABASE_URL from environment if available (for production)
-database_url = os.getenv('DATABASE_URL')
+database_url = os.getenv("DATABASE_URL")
 if database_url:
     # Convert to async URL if needed
-    if database_url.startswith('postgresql://'):
-        database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     engine = create_async_engine(database_url, echo=True)
 else:
     # Fallback to settings for local development

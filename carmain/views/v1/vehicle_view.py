@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Form, status, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
@@ -56,10 +56,7 @@ async def get(
 @vehicle_router.post(path="/create")
 async def create(
     request: Request,
-    brand: str = Form(...),
-    model: str = Form(...),
-    year: int = Form(...),
-    odometer: int = Form(...),
+    vehicle_data: VehicleCreate = Depends(VehicleCreate.as_form),
     photo: UploadFile = File(None),
     vehicle_service: VehicleService = Depends(),
     file_service: FileService = Depends(),
@@ -78,14 +75,8 @@ async def create(
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        vehicle_data = VehicleCreate(
-            brand=brand,
-            model=model,
-            year=year,
-            odometer=odometer,
-            photo=photo_path,
-            user_id=user.id,
-        )
+        vehicle_data.photo = photo_path
+        vehicle_data.user_id = user.id
 
         await vehicle_service.add(vehicle_data)
 
