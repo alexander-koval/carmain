@@ -146,7 +146,6 @@ async def test_sing_up_creates_user_and_removes_hashed_password(
     assert created_arg.email == email
     assert created_arg.is_active is True
     assert created_arg.is_superuser is False
-    # result hashed_password should be cleared (default or None)
     assert result.hashed_password is None
 
 
