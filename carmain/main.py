@@ -8,7 +8,6 @@ from markupsafe import Markup
 from sqladmin import Admin
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-
 from carmain.admin.items import MaintenanceItemAdmin, UserMaintenanceItemAdmin
 from carmain.admin.records import ServiceRecordAdmin
 from carmain.admin.users import UserAdmin, AccessTokenAdmin
@@ -16,6 +15,7 @@ from carmain.admin.vehicles import VehicleAdmin
 from carmain.bootstrap import create_initial_maintenance_items
 from carmain.core import database
 from carmain.core.config import get_settings
+from carmain.core.admin_auth import AdminAuthBackend
 from carmain.models.users import User
 from carmain.routers.v1 import auth_router, vehicle_router
 from carmain.views import auth_router as auth_view_router
@@ -31,7 +31,7 @@ from loguru import logger
 async def lifespan(app: FastAPI):
     # Startup: create initial maintenance items
     logger.info("Application startup: initializing maintenance items")
-    
+
     # Использование get_async_session корректным образом
     async for session in database.get_async_session():
         try:
@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Error during initialization: {e}")
             raise
-    
+
     yield
     
     # Shutdown: cleanup resources if needed
@@ -52,7 +52,11 @@ settings = get_settings()
 carmain.mount("/static", StaticFiles(directory=settings.static_path), name="static")
 carmain.mount("/media", StaticFiles(directory=settings.media_path), name="media")
 
-admin = Admin(carmain, engine=database.engine)
+admin = Admin(
+    carmain,
+    engine=database.engine,
+    authentication_backend=AdminAuthBackend(settings.secret_key),
+)
 admin.add_view(UserAdmin)
 admin.add_view(AccessTokenAdmin)
 admin.add_view(MaintenanceItemAdmin)
