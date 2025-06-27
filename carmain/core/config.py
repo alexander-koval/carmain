@@ -24,6 +24,15 @@ class Settings(BaseSettings):
     auto_verify: bool = True  # Верифицируем пользователей автоматически, не проверяя
     static_path: str = "carmain/static"
     media_path: str = "carmain/media"
+    # Email (SMTP) settings for user verification
+    # Email (SMTP) settings for user verification
+    smtp_host: str = "localhost"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "no-reply@example.com"
+    # Base URL for constructing verification links
+    app_url: str = "http://localhost:8000"
     model_config = SettingsConfigDict(env_file=".env")
 
 

@@ -27,6 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: create initial maintenance items

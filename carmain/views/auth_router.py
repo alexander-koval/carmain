@@ -1,5 +1,5 @@
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, Request, status, Form
+from fastapi import APIRouter, Depends, Request, BackgroundTasks, status, Form
 
 from fastapi_users.authentication import Strategy
 from fastapi_users import models, exceptions
@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote
 
+from carmain.core.config import get_settings
 from carmain.models.users import User
 from carmain.routers.v1.auth_router import current_active_verified_user
 from carmain.schemas.user_schema import UserCreate, SignUpFormData
@@ -74,12 +75,16 @@ async def logout_action(
 @auth_view_router.post("/signup")
 async def signup_action(
     request: Request,
+    background_tasks: BackgroundTasks,
+    settings=Depends(get_settings),
     form_data: SignUpFormData = Depends(get_signup_form_data),
     user_manager: UserManager = Depends(get_user_manager),
 ):
     user_create = UserCreate(email=form_data.email, password=form_data.password)
     try:
-        await user_manager.create(user_create, safe=True, request=request)
+        user = await user_manager.create(user_create, safe=True, request=request)
+        if not settings.auto_verify:
+            background_tasks.add_task(user_manager.request_verify, user, request)
     except exceptions.UserAlreadyExists:
         return templates.TemplateResponse(
             "signup.html", {"request": request, "error": "Account already exists"}

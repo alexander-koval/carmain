@@ -22,6 +22,10 @@ from carmain.core.config import get_settings
 from carmain.core.database import get_async_session
 from carmain.models.auth import AccessToken, get_access_token_db
 from carmain.models.users import User, get_user_db
+from carmain.services.email_service import (
+    send_verification_email,
+    send_password_reset_email,
+)
 
 
 settings = get_settings()
@@ -60,7 +64,9 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     ) -> None:
         if settings.auto_verify:
             async for session in get_async_session():
-                await session.execute(update(User).where(User.id == user.id).values(is_verified=True))
+                await session.execute(
+                    update(User).where(User.id == user.id).values(is_verified=True)
+                )
                 await session.commit()
 
         return await super().on_after_register(user, request)
@@ -68,12 +74,28 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_forgot_password(
         self, user: models.UP, token: str, request: Optional[Request] = None
     ) -> None:
+        logger.info(f"User {user.id} has requested a password reset. Token: {token}")
+
+        await send_password_reset_email(user.email, token)
         return await super().on_after_forgot_password(user, token, request)
 
     async def on_after_request_verify(
         self, user: models.UP, token: str, request: Optional[Request] = None
     ) -> None:
-        return await super().on_after_request_verify(user, token, request)
+        """
+        Hook called after a verification token is generated.
+        Enqueue sending the email via BackgroundTasks injected in request.
+        """
+        # Default no-op
+        await super().on_after_request_verify(user, token, request)
+        # Send email if background tasks available
+        try:
+            logger.info(
+                f"Verification requested for user {user.id}. Verification token: {token}"
+            )
+            await send_verification_email(user.email, token)
+        except Exception:
+            pass
 
 
 password_helper = PasswordHelper()
